@@ -1,0 +1,14 @@
+[package]
+name = "mandel"
+version = "0.1.0"
+authors = ["Bernie Innocenti <bernie@codewiz.org>"]
+
+[dependencies]
+glium = "*"
+glutin = "*"
+genmesh = "0.4"
+obj = { version = "0.5", features = ["usegenmesh"] }
+
+[[bin]]
+name = "mandel"
+path = "mandel.rs"
