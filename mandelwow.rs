@@ -1,3 +1,5 @@
+// Wow. Such fractal.
+
 #[macro_use]
 
 extern crate glium;
@@ -9,13 +11,6 @@ use glium::index::PrimitiveType;
 use glium::index::IndexBuffer;
 
 mod support;
-
-#[derive(Copy, Clone)]
-struct Vertex {
-    position: [f32; 3],
-    color: [f32; 3],
-}
-implement_vertex!(Vertex, position, color);
 
 #[derive(Copy, Clone)]
 struct Cube {
@@ -137,7 +132,6 @@ fn bounding_box<U>(display: &glium::Display,
                    program: &glium::Program,
                    uniforms: &U,
                    cube: &Cube) where U: glium::uniforms::Uniforms {
-    // Draw the bounding box
 
     #[derive(Copy, Clone)]
     struct Vertex { position: [f32; 3] }
@@ -155,30 +149,40 @@ fn bounding_box<U>(display: &glium::Display,
     ];
     let vb = glium::VertexBuffer::new(display, &cube).unwrap();
 
+    let params = Default::default();
+
     let front_indices = IndexBuffer::new(display, PrimitiveType::LineLoop,
                                          &[0, 1, 2, 3u16]).unwrap();
-    frame.draw(&vb, &front_indices, program, uniforms, &Default::default()).unwrap();
+    frame.draw(&vb, &front_indices, program, uniforms, &params).unwrap();
 
     let back_indices = IndexBuffer::new(display, PrimitiveType::LineLoop,
                                         &[4, 5, 6, 7u16]).unwrap();
-    frame.draw(&vb, &back_indices, program, uniforms, &Default::default()).unwrap();
+    frame.draw(&vb, &back_indices, program, uniforms, &params).unwrap();
 
     let sides_indices = IndexBuffer::new(display, PrimitiveType::LinesList,
                                          &[0, 4, 1, 5, 2, 6, 3, 7u16]).unwrap();
-    frame.draw(&vb, &sides_indices, program, uniforms, &Default::default()).unwrap();
+    frame.draw(&vb, &sides_indices, program, uniforms, &params).unwrap();
 }
 
 fn mandel<U>(display: &glium::Display,
           frame: &mut glium::Frame,
           program: &glium::Program,
           uniforms: &U,
+          bounds: &Cube,
           z: [f32; 2]) where U: glium::uniforms::Uniforms {
-    let xmin = -2.0;
-    let xmax =  0.7;
-    let ymin = -1.0;
-    let ymax =  1.0;
-    let zmin = -1.2;
-    let zmax =  1.2;
+
+    #[derive(Copy, Clone)]
+    struct Vertex {
+        position: [f32; 3],
+        color: [f32; 3],
+    }
+    implement_vertex!(Vertex, position, color);
+
+    let xmin = bounds.xmin;
+    let xmax = bounds.xmax;
+    let ymin = bounds.ymin;
+    let ymax = bounds.ymax;
+
     let width = xmax - xmin;
     let height = ymax - ymin;
     let xres: usize = 1;
@@ -233,12 +237,12 @@ fn mandelwow(display: &glium::Display,
              program: &glium::Program,
              model: [[f32; 4]; 4],
              camera: &support::camera::CameraState,
-             cube: &Cube,
+             bounds: &Cube,
              mandel_w: f32) {
     let mut z0 = [mandel_w, 0f32];
     let zres = 50;
-    let zmin = cube.zmin;
-    let zmax = cube.zmax;
+    let zmin = bounds.zmin;
+    let zmax = bounds.zmax;
     let zstep = (zmax - zmin) / zres as f32;
     let mut zy = zmin;
     for _ in 0..zres {
@@ -252,7 +256,7 @@ fn mandelwow(display: &glium::Display,
             perspective: camera.get_perspective(),
         };
 
-        mandel(&display, &mut frame, &program, &uniforms, z0);
+        mandel(&display, &mut frame, &program, &uniforms, bounds, z0);
     }
 }
 
@@ -266,7 +270,6 @@ fn main() {
 
     let mut camera = support::camera::CameraState::new();
     let mut t: f32 = 0.0;
-    let mut z = [ 0.0, 0.0f32 ];
     let mut pause = false;
 
     support::start_loop(|| {
@@ -277,18 +280,28 @@ fn main() {
             t += 0.01;
         }
 
-        // Compute a sine wave slicing the Mandelwow along its 4th dimension.
+        // These are the bounds of the 3D Mandelwow section which we render in 3-space.
+        let bounds = Cube {
+            xmin: -2.0,
+            xmax:  0.7,
+            ymin: -1.0,
+            ymax:  1.0,
+            zmin: -1.2,
+            zmax:  1.2,
+        };
+
+        // Vary the wow factor to slice the Mandelwow along its 4th dimension.
         let wmin = -0.8;
         let wmax =  0.8;
         let wsize = wmax - wmin;
-        let mandel_w = ((t.sin() + 1.0) / 2.0) * wsize + wmin;
+        let wow = (((t * 0.7).sin() + 1.0) / 2.0) * wsize + wmin;
 
-        //println!("t={} z={:?} camera={:?}", t, z, camera.get_pos());
+        //println!("t={} w={:?} camera={:?}", t, w, camera.get_pos());
 
         let mut frame = display.draw();
         frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
-        let z_trans = -2.0;  // How far back to move the model
+        let z_trans = -2.0;  // Send the model back a little bit so it fits the screen.
         let model = [
             [ t.cos(),  t.sin(),  0.0,     0.0],
             [-t.sin(),  t.cos(),  0.0,     0.0],
@@ -299,16 +312,7 @@ fn main() {
         let program = mandelwow_program(&display);
         let bounding_box_program = solid_fill_program(&display);
 
-        let bounds = Cube {
-            xmin: -2.0,
-            xmax:  0.7,
-            ymin: -1.0,
-            ymax:  1.0,
-            zmin: -1.2,
-            zmax:  1.2,
-        };
-
-        mandelwow(&display, &mut frame, &program, model, &camera, &bounds, mandel_w);
+        mandelwow(&display, &mut frame, &program, model, &camera, &bounds, wow);
 
         let uniforms = uniform! {
             model: model,
