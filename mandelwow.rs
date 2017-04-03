@@ -7,8 +7,8 @@ extern crate glutin;
 
 use glium::DisplayBuild;
 use glium::Surface;
-use glium::index::PrimitiveType;
 use glium::index::IndexBuffer;
+use glium::index::PrimitiveType;
 
 mod support;
 
@@ -149,7 +149,15 @@ fn bounding_box<U>(display: &glium::Display,
     ];
     let vb = glium::VertexBuffer::new(display, &cube).unwrap();
 
-    let params = Default::default();
+    let params = glium::DrawParameters {
+        depth: glium::Depth {
+            test: glium::draw_parameters::DepthTest::IfLess,
+            write: true,
+            .. Default::default()
+        },
+        blend: glium::Blend::alpha_blending(),
+        .. Default::default()
+    };
 
     let front_indices = IndexBuffer::new(display, PrimitiveType::LineLoop,
                                          &[0, 1, 2, 3u16]).unwrap();
@@ -268,9 +276,13 @@ fn main() {
         .build_glium()
         .unwrap();
 
+    let program = mandelwow_program(&display);
+    let bounding_box_program = solid_fill_program(&display);
+
     let mut camera = support::camera::CameraState::new();
     let mut t: f32 = 0.0;
     let mut pause = false;
+    let mut bounding_box_enabled = true;
 
     support::start_loop(|| {
         camera.update();
@@ -309,17 +321,18 @@ fn main() {
             [     0.0,  0.0,      z_trans, 1.0f32]
         ];
 
-        let program = mandelwow_program(&display);
-        let bounding_box_program = solid_fill_program(&display);
+        // Draw the bounding box before the fractal, when the Z-buffer is still clear, so the lines
+        // behind the semi-translucent areas will be drawn.
+        if bounding_box_enabled {
+            let uniforms = uniform! {
+                model: model,
+                view:  camera.get_view(),
+                perspective: camera.get_perspective(),
+            };
+            bounding_box(&display, &mut frame, &bounding_box_program, &uniforms, &bounds);
+        }
 
         mandelwow(&display, &mut frame, &program, model, &camera, &bounds, wow);
-
-        let uniforms = uniform! {
-            model: model,
-            view:  camera.get_view(),
-            perspective: camera.get_perspective(),
-        };
-        bounding_box(&display, &mut frame, &bounding_box_program, &uniforms, &bounds);
 
         for ev in display.poll_events() {
             match ev {
@@ -335,6 +348,9 @@ fn main() {
                 },
                 glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::P)) => {
                     pause ^= true;
+                },
+                glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::B)) => {
+                    bounding_box_enabled ^= true;
                 },
                 ev => camera.process_input(&ev),
             }
