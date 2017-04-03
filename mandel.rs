@@ -1,10 +1,12 @@
 #[macro_use]
 
 extern crate glium;
+extern crate glutin;
 
 use glium::DisplayBuild;
 use glium::Surface;
-//use glium::index::PrimitiveType;
+use glium::index::PrimitiveType;
+use glium::index::IndexBuffer;
 
 mod support;
 
@@ -15,8 +17,19 @@ struct Vertex {
 }
 implement_vertex!(Vertex, position, color);
 
+#[derive(Copy, Clone)]
+struct Cube {
+    xmin: f32,
+    ymin: f32,
+    zmin: f32,
+    xmax: f32,
+    ymax: f32,
+    zmax: f32,
+}
+
+/*
 fn mand(cx: f32, cy: f32) -> [f32; 3] {
-    let mut maxiter = 64;
+    let maxiter = 64;
     let mut iter = maxiter;
     let mut zx = cx;
     let mut zy = cy;
@@ -33,89 +46,172 @@ fn mand(cx: f32, cy: f32) -> [f32; 3] {
 
     [0.0, 0.0, 0.0]
 }
+*/
 
-fn mandel<U>(display: &glium::Display,
-          frame: &mut glium::Frame,
-          uniforms: &U,
-          t: f32) where U: glium::uniforms::Uniforms {
-    let program = program!(display,
+fn mandelwow_program(display: &glium::Display) -> glium::Program {
+    return program!(display,
         140 => {
-            vertex: "
+            vertex: r#"
                 #version 140
                 uniform mat4 perspective;
                 uniform mat4 view;
                 uniform mat4 model;
+                uniform vec2 z0;
                 in vec3 position;
-                in vec3 color;
                 out vec2 c;
+                out vec2 z;
+
                 void main() {
                     mat4 modelview = view * model;
                     gl_Position = perspective * modelview * vec4(position, 1.0);
-                    c = vec2(gl_Position.x, gl_Position.y);
+                    c = vec2(position.x, position.y);
+                    z = vec2(z0.x, z0.y);
                 }
-            ",
+            "#,
 
-            fragment: "
+            fragment: r#"
                 #version 140
-                precision mediump float;
+                precision highp float;
                 in vec2 c;
+                in vec2 z;
                 out vec4 f_color;
 
                 void main() {
-                    float zx = c.x;
-                    float zy = c.y;
-                    int iter = 64;
+                    float zx = z.x;
+                    float zy = z.y;
+                    int maxiter = 64;
+                    int iter = maxiter;
                     while (iter > 0) {
                         float zx2 = zx * zx;
                         float zy2 = zy * zy;
                         if (zx2 * zy2 > 4.0) {
-                          f_color = vec4(0, 0, 0, 0);
+                          float index = 1.0 - float(iter) / float(maxiter);
+                          f_color = vec4(index, index * 0.5, index, index * 0.5);
                           return;
                         }
                         zy = zx * zy * 2.0 + c.y;
                         zx = zx2 - zy2 + c.x;
                         iter -= 1;
                     }
-                    f_color = vec4(1.0, 1.0, 1.0, 1.0);
-                    //f_color = vec4(vColor, 1.0);
+                    f_color = vec4((sin(z.y) + 1.0) / 2,
+                                   (sin(c.y) + 1.0) / 2,
+                                   (sin(c.x) + 1.0) / 2,
+                                   1.0);
                 }
-            "
+            "#
         }).unwrap();
+}
 
-    let xmin = -1.3;
+fn solid_fill_program(display: &glium::Display) -> glium::Program {
+    let vertex_shader_src = r#"
+        #version 140
+        in vec3 position;
+        uniform mat4 perspective;
+        uniform mat4 view;
+        uniform mat4 model;
+
+        void main() {
+            mat4 modelview = view * model;
+            gl_Position = perspective * modelview * vec4(position, 1.0);
+        }
+    "#;
+
+    let fragment_shader_src = r#"
+        #version 140
+
+        out vec4 color;
+
+        void main() {
+            color = vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    "#;
+
+    return glium::Program::from_source(display,
+                                       vertex_shader_src,
+                                       fragment_shader_src,
+                                       None).unwrap();
+}
+
+fn bounding_box<U>(display: &glium::Display,
+                   frame: &mut glium::Frame,
+                   program: &glium::Program,
+                   uniforms: &U,
+                   cube: &Cube) where U: glium::uniforms::Uniforms {
+    // Draw the bounding box
+
+    #[derive(Copy, Clone)]
+    struct Vertex { position: [f32; 3] }
+    implement_vertex!(Vertex, position);
+
+    let cube = [
+        Vertex { position: [cube.xmin, cube.ymin, cube.zmin] },
+        Vertex { position: [cube.xmax, cube.ymin, cube.zmin] },
+        Vertex { position: [cube.xmax, cube.ymax, cube.zmin] },
+        Vertex { position: [cube.xmin, cube.ymax, cube.zmin] },
+        Vertex { position: [cube.xmin, cube.ymin, cube.zmax] },
+        Vertex { position: [cube.xmax, cube.ymin, cube.zmax] },
+        Vertex { position: [cube.xmax, cube.ymax, cube.zmax] },
+        Vertex { position: [cube.xmin, cube.ymax, cube.zmax] },
+    ];
+    let vb = glium::VertexBuffer::new(display, &cube).unwrap();
+
+    let front_indices = IndexBuffer::new(display, PrimitiveType::LineLoop,
+                                         &[0, 1, 2, 3u16]).unwrap();
+    frame.draw(&vb, &front_indices, program, uniforms, &Default::default()).unwrap();
+
+    let back_indices = IndexBuffer::new(display, PrimitiveType::LineLoop,
+                                        &[4, 5, 6, 7u16]).unwrap();
+    frame.draw(&vb, &back_indices, program, uniforms, &Default::default()).unwrap();
+
+    let sides_indices = IndexBuffer::new(display, PrimitiveType::LinesList,
+                                         &[0, 4, 1, 5, 2, 6, 3, 7u16]).unwrap();
+    frame.draw(&vb, &sides_indices, program, uniforms, &Default::default()).unwrap();
+}
+
+fn mandel<U>(display: &glium::Display,
+          frame: &mut glium::Frame,
+          program: &glium::Program,
+          uniforms: &U,
+          z: [f32; 2]) where U: glium::uniforms::Uniforms {
+    let xmin = -2.0;
     let xmax =  0.7;
     let ymin = -1.0;
     let ymax =  1.0;
+    let zmin = -1.2;
+    let zmax =  1.2;
     let width = xmax - xmin;
     let height = ymax - ymin;
-    let xres: usize = 100;
-    let yres: usize = 100;
-    let xstep = width / xres as f32;
-    let ystep = height / yres as f32;
+    let xres: usize = 1;
+    let yres: usize = 1;
+    let xstep = width / (xres as f32);
+    let ystep = height / (yres as f32);
     let vb_size = (xres * 2 + 4) * yres;
     let mut v : Vec<Vertex> = Vec::with_capacity(vb_size);
-    v.resize(vb_size, Vertex { position: [0.0, 0.0, 1.0], color: [0.0, 0.0, 0.0] });
+    v.resize(vb_size, Vertex { position: [0.0, 0.0, -1.0], color: [0.0, 0.0, 0.0] });
     let mut i: usize = 0;
     let mut vy = ymin;
+    let vz = z[1];
     for _ in 0..yres {
         let mut vx = xmin;
-        v[i] = Vertex { position: [vx, vy+ystep, 1.0], color: [0.0, 0.0, 0.0] }; i+=1;
-        v[i] = Vertex { position: [vx, vy, 1.0], color: [vx, vy, 0.0] }; i+=1;
+        let c = [0.0, 0.0, 1.0];
+        v[i] = Vertex { position: [vx, vy+ystep, vz], color: c }; i += 1;
+        v[i] = Vertex { position: [vx, vy,       vz], color: c }; i += 1;
         for _ in 0..xres {
-            let c = mand(vx, vy);
-            v[i] = Vertex { position: [vx+xstep, vy+ystep, 1.0], color: c }; i += 1;
-            v[i] = Vertex { position: [vx+xstep, vy      , 1.0], color: c }; i += 1;
+            //let c = mand(vx, vy);
+            v[i] = Vertex { position: [vx+xstep, vy+ystep, vz], color: c }; i += 1;
+            v[i] = Vertex { position: [vx+xstep, vy,       vz], color: c }; i += 1;
             vx += xstep;
         }
-        v[i] = Vertex { position: [vx+xstep, vy, 1.0], color: [0.0, 0.0, 0.0] }; i+=1;
-        v[i] = Vertex { position: [vx+xstep, vy, 1.0], color: [0.0, 0.0, 0.0] }; i+=1;
+        v[i] = Vertex { position: [vx,   vy, vz], color: c }; i += 1;
+        v[i] = Vertex { position: [xmin, vy, vz], color: c }; i += 1;
         vy += ystep;
     }
+
     //let vb = glium::VertexBuffer::empty_persistent(display, width*height*3).unwrap();
     let vb = glium::VertexBuffer::new(display, &v).unwrap();
 
-    //let indices = glium::index::NoIndices(glium::index::PrimitiveType::TriangleStrip);
-    let indices = glium::index::NoIndices(glium::index::PrimitiveType::LineStrip);
+    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TriangleStrip);
+    //let indices = glium::index::NoIndices(glium::index::PrimitiveType::LineStrip);
     //let indices = glium::IndexBuffer::new(display, PrimitiveType::TrianglesList,
     //                                      &[0u16, 1, 2]).unwrap();
 
@@ -125,53 +221,117 @@ fn mandel<U>(display: &glium::Display,
             write: true,
             .. Default::default()
         },
+        blend: glium::Blend::alpha_blending(),
         .. Default::default()
     };
 
-    //let mut s = display.draw();
-    frame.draw(&vb, &indices, &program, uniforms, &params).unwrap();
+    frame.draw(&vb, &indices, program, uniforms, &params).unwrap();
+}
+
+fn mandelwow(display: &glium::Display,
+             mut frame: &mut glium::Frame,
+             program: &glium::Program,
+             model: [[f32; 4]; 4],
+             camera: &support::camera::CameraState,
+             cube: &Cube,
+             mandel_w: f32) {
+    let mut z0 = [mandel_w, 0f32];
+    let zres = 50;
+    let zmin = cube.zmin;
+    let zmax = cube.zmax;
+    let zstep = (zmax - zmin) / zres as f32;
+    let mut zy = zmin;
+    for _ in 0..zres {
+        z0[1] = zy;
+        zy += zstep;
+
+        let uniforms = uniform! {
+            z0: z0,
+            model: model,
+            view:  camera.get_view(),
+            perspective: camera.get_perspective(),
+        };
+
+        mandel(&display, &mut frame, &program, &uniforms, z0);
+    }
 }
 
 fn main() {
-
     let display = glium::glutin::WindowBuilder::new()
         .with_dimensions(1024, 768)
         .with_depth_buffer(24)
-        .with_title(format!("Mandel"))
+        .with_title(format!("MandelWow"))
         .build_glium()
         .unwrap();
 
     let mut camera = support::camera::CameraState::new();
-
-    //let mut t: f32 = -0.5;
     let mut t: f32 = 0.0;
+    let mut z = [ 0.0, 0.0f32 ];
+    let mut pause = false;
+
     support::start_loop(|| {
         camera.update();
 
-        //t += 0.002;
-        //println!("t={}", t);
+        if !pause {
+            // Increment time
+            t += 0.01;
+        }
+
+        // Compute a sine wave slicing the Mandelwow along its 4th dimension.
+        let wmin = -0.8;
+        let wmax =  0.8;
+        let wsize = wmax - wmin;
+        let mandel_w = ((t.sin() + 1.0) / 2.0) * wsize + wmin;
+
+        //println!("t={} z={:?} camera={:?}", t, z, camera.get_pos());
 
         let mut frame = display.draw();
-        frame.clear_color_and_depth((0.0, 0.0, 0.5, 1.0), 1.0);
+        frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
+        let z_trans = -2.0;  // How far back to move the model
         let model = [
-            [ (t*5.0).cos(), (t*3.0).sin(), 0.0, 0.0],
-            [-t.sin(),       -t.cos(),      0.0, 0.0],
-            [     0.0,                      0.0, 1.0, 0.0],
-            [       t,                      0.0, 0.0, 1.0f32]
+            [ t.cos(),  t.sin(),  0.0,     0.0],
+            [-t.sin(),  t.cos(),  0.0,     0.0],
+            [     0.0,  0.0,      1.0,     0.0],
+            [     0.0,  0.0,      z_trans, 1.0f32]
         ];
+
+        let program = mandelwow_program(&display);
+        let bounding_box_program = solid_fill_program(&display);
+
+        let bounds = Cube {
+            xmin: -2.0,
+            xmax:  0.7,
+            ymin: -1.0,
+            ymax:  1.0,
+            zmin: -1.2,
+            zmax:  1.2,
+        };
+
+        mandelwow(&display, &mut frame, &program, model, &camera, &bounds, mandel_w);
 
         let uniforms = uniform! {
             model: model,
-            view:  camera.get_view(), // view_matrix(&[2.0, -1.0, 1.0], &[-2.0, 1.0, 1.0], &[0.0, 1.0, 0.0]),
-            perspective: camera.get_perspective(), // perspective,
+            view:  camera.get_view(),
+            perspective: camera.get_perspective(),
         };
-
-        mandel(&display, &mut frame, &uniforms, t);
+        bounding_box(&display, &mut frame, &bounding_box_program, &uniforms, &bounds);
 
         for ev in display.poll_events() {
             match ev {
-                glium::glutin::Event::Closed => return support::Action::Stop,
+                glium::glutin::Event::Closed => {
+                    frame.finish().unwrap();
+                    return support::Action::Stop
+                },
+                glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::PageUp)) => {
+                    t += 0.01;
+                },
+                glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::PageDown)) => {
+                    t -= 0.01;
+                },
+                glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::P)) => {
+                    pause ^= true;
+                },
                 ev => camera.process_input(&ev),
             }
         }

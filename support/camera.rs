@@ -31,13 +31,17 @@ impl CameraState {
         CameraState {
             aspect_ratio: 1024.0 / 768.0,
             pos: Vec3(0.0, 0.0, 0.0),
-            dir: Vec3(0.0, 0.0, 1.0),
+            dir: Vec3(0.0, 0.0, -1.0),
             .. Default::default()
         }
     }
 
     pub fn set_pos(&mut self, pos: Vec3) {
         self.pos = pos;
+    }
+
+    pub fn get_pos(&self) -> Vec3 {
+        self.pos
     }
 
     pub fn set_dir(&mut self, dir: Vec3) {
@@ -59,7 +63,6 @@ impl CameraState {
             [         0.0         ,    0.0, -(2.0*zfar*znear)/(zfar-znear),   0.0],
         ]
     }
-
 
     pub fn get_view(&self) -> [[f32; 4]; 4] {
         let f = norm(&self.dir);
