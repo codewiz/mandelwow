@@ -10,5 +10,5 @@ genmesh = "0.4"
 obj = { version = "0.5", features = ["usegenmesh"] }
 
 [[bin]]
-name = "mandel"
-path = "mandel.rs"
+name = "mandelwow"
+path = "mandelwow.rs"
