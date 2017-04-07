@@ -5,10 +5,11 @@
 extern crate glium;
 extern crate glutin;
 
-use glium::DisplayBuild;
-use glium::Surface;
-use glium::index::IndexBuffer;
-use glium::index::PrimitiveType;
+use glium::{DisplayBuild, Surface};
+use glium::index::{IndexBuffer, PrimitiveType};
+use glutin::ElementState::Pressed;
+use glutin::Event::KeyboardInput;
+use glutin::VirtualKeyCode;
 
 mod support;
 
@@ -270,8 +271,10 @@ fn mandelwow(display: &glium::Display,
 
 fn main() {
     let display = glium::glutin::WindowBuilder::new()
-        .with_dimensions(1024, 768)
+        //.with_dimensions(1024, 768)
+        .with_fullscreen(glutin::get_primary_monitor())
         .with_depth_buffer(24)
+        .with_vsync()
         .with_title(format!("MandelWow"))
         .build_glium()
         .unwrap();
@@ -283,6 +286,7 @@ fn main() {
     let mut t: f32 = 0.0;
     let mut pause = false;
     let mut bounding_box_enabled = true;
+    let mut fullscreen = true;
 
     support::start_loop(|| {
         camera.update();
@@ -333,30 +337,43 @@ fn main() {
         }
 
         mandelwow(&display, &mut frame, &program, model, &camera, &bounds, wow);
+        frame.finish().unwrap();
 
         for ev in display.poll_events() {
             match ev {
-                glium::glutin::Event::Closed => {
-                    frame.finish().unwrap();
+                glium::glutin::Event::Closed |
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::Escape)) |
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::Q)) => {
                     return support::Action::Stop
                 },
-                glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::PageUp)) => {
-                    t += 0.01;
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::B)) => {
+                    bounding_box_enabled ^= true;
                 },
-                glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::PageDown)) => {
-                    t -= 0.01;
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::F)) => {
+                    fullscreen ^= true;
+                    if fullscreen {
+                        glutin::WindowBuilder::new()
+                            .with_fullscreen(glutin::get_primary_monitor())
+                            .rebuild_glium(&display).unwrap();
+                    } else {
+                        glutin::WindowBuilder::new()
+                            .rebuild_glium(&display).unwrap();
+                    }
                 },
-                glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::P)) => {
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::P)) => {
                     pause ^= true;
                 },
-                glutin::Event::KeyboardInput(glutin::ElementState::Pressed, _, Some(glutin::VirtualKeyCode::B)) => {
-                    bounding_box_enabled ^= true;
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::PageUp)) => {
+                    t += 0.01;
+                },
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::PageDown)) => {
+                    t -= 0.01;
                 },
                 ev => camera.process_input(&ev),
             }
         }
 
-        frame.finish().unwrap();
         support::Action::Continue
     });
+
 }
