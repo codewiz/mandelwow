@@ -31,54 +31,8 @@ fn mand(cx: f32, cy: f32) -> [f32; 3] {
 pub fn program(display: &glium::Display) -> glium::Program {
     return program!(display,
         140 => {
-            vertex: r#"
-                #version 140
-                uniform mat4 perspective;
-                uniform mat4 view;
-                uniform mat4 model;
-                uniform vec2 z0;
-                in vec3 position;
-                out vec2 c;
-                out vec2 z;
-
-                void main() {
-                    mat4 modelview = view * model;
-                    gl_Position = perspective * modelview * vec4(position, 1.0);
-                    c = vec2(position.x, position.y);
-                    z = vec2(z0.x, z0.y);
-                }
-            "#,
-
-            fragment: r#"
-                #version 140
-                precision highp float;
-                in vec2 c;
-                in vec2 z;
-                out vec4 f_color;
-
-                void main() {
-                    float zx = z.x;
-                    float zy = z.y;
-                    int maxiter = 64;
-                    int iter = maxiter;
-                    while (iter > 0) {
-                        float zx2 = zx * zx;
-                        float zy2 = zy * zy;
-                        if (zx2 * zy2 > 4.0) {
-                          float index = float(iter) / float(maxiter);
-                          f_color = vec4(index, 0.1, 0.5 - index / 2, 0.8 - index);
-                          return;
-                        }
-                        zy = zx * zy * 2.0 + c.y;
-                        zx = zx2 - zy2 + c.x;
-                        iter -= 1;
-                    }
-                    f_color = vec4((sin(z.y) + 1.0) / 2,
-                                   (sin(c.y) + 1.0) / 2,
-                                   (sin(c.x) + 1.0) / 2,
-                                   1.0);
-                }
-            "#
+            vertex: include_str!("mandelwow.vert"),
+            fragment: include_str!("mandelwow.frag"),
         }).unwrap();
 }
 

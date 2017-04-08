@@ -4,29 +4,8 @@ use glium::{Display, Program, Surface};
 use glium::index::{IndexBuffer, PrimitiveType};
 
 pub fn solid_fill_program(display: &Display) -> Program {
-    let vertex_shader_src = r#"
-        #version 140
-        in vec3 position;
-        uniform mat4 perspective;
-        uniform mat4 view;
-        uniform mat4 model;
-
-        void main() {
-            mat4 modelview = view * model;
-            gl_Position = perspective * modelview * vec4(position, 1.0);
-        }
-    "#;
-
-    let fragment_shader_src = r#"
-        #version 140
-
-        out vec4 color;
-
-        void main() {
-            color = vec4(1.0, 1.0, 1.0, 1.0);
-        }
-    "#;
-
+    let vertex_shader_src = include_str!("solid.vert");
+    let fragment_shader_src = include_str!("solid.frag");
     return Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap();
 }
 
