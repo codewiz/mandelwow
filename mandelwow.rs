@@ -4,12 +4,17 @@
 
 extern crate glium;
 extern crate glutin;
+extern crate libxm;
 
 use glium::{DisplayBuild, Surface};
 use glium::index::{IndexBuffer, PrimitiveType};
 use glutin::ElementState::Pressed;
 use glutin::Event::KeyboardInput;
 use glutin::VirtualKeyCode;
+use libxm::XMContext;
+use std::fs::File;
+use std::io::Read;
+
 
 mod support;
 
@@ -268,8 +273,16 @@ fn mandelwow(display: &glium::Display,
         mandel(&display, &mut frame, &program, &uniforms, bounds, z0);
     }
 }
+fn play_xm(raw_xm: &[u8]) {
+    let freq = 48000u32;
+    let mut xm = XMContext::new(&raw_xm, freq).unwrap();
+}
 
 fn main() {
+    let mut xm = Vec::new();
+    File::open("flora.xm").unwrap().read_to_end(&mut xm).unwrap();
+    play_xm(&xm);
+
     let display = glium::glutin::WindowBuilder::new()
         //.with_dimensions(1024, 768)
         .with_fullscreen(glutin::get_primary_monitor())
