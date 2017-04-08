@@ -12,11 +12,8 @@ use glium::index::{IndexBuffer, PrimitiveType};
 use glutin::ElementState::Pressed;
 use glutin::Event::KeyboardInput;
 use glutin::VirtualKeyCode;
-use libxm::XMContext;
-use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
-use std::fs::File;
-use std::io::Read;
 
+mod sound;
 mod support;
 
 #[derive(Copy, Clone)]
@@ -275,51 +272,8 @@ fn mandelwow(display: &glium::Display,
     }
 }
 
-struct XmCallback {
-    xm: XMContext,
-}
-
-impl AudioCallback for XmCallback {
-    type Channel = f32;
-
-    fn callback(&mut self, out: &mut [f32]) {
-        self.xm.generate_samples(out);
-    }
-}
-
-struct SoundPlayer {
-    _device: AudioDevice<XmCallback>,
-}
-
-fn play_xm(raw_xm: &[u8]) -> SoundPlayer {
-    let sdl_context = sdl2::init().unwrap();
-    let sdl_audio = sdl_context.audio().unwrap();
-
-    let sample_rate = 48000u32;
-    let desired_spec = AudioSpecDesired {
-        freq: Some(sample_rate as i32),
-        channels: Some(2u8),
-        samples: None,
-    };
-    let device = sdl_audio.open_playback(None, &desired_spec, |actual_spec| {
-        let xm = XMContext::new(&raw_xm, actual_spec.freq as u32).unwrap();
-
-        XmCallback {
-            xm: xm,
-        }
-    }).unwrap();
-
-    device.resume();
-
-    SoundPlayer {
-        _device: device,
-    }
-}
-
 fn main() {
-    let mut xm = Vec::new();
-    File::open("flora.xm").unwrap().read_to_end(&mut xm).unwrap();
-    let _sound_player = play_xm(&xm);
+    sound::start();
 
     let display = glium::glutin::WindowBuilder::new()
         //.with_dimensions(1024, 768)
@@ -376,8 +330,8 @@ fn main() {
             [     0.0,  0.0,      z_trans, 1.0f32]
         ];
 
-        // Draw the bounding box before the fractal, when the Z-buffer is still clear, so the lines
-        // behind the semi-translucent areas will be drawn.
+        // Draw the bounding box before the fractal, when the Z-buffer is still clear,
+        // so the lines behind the semi-translucent areas will be drawn.
         if bounding_box_enabled {
             let uniforms = uniform! {
                 model: model,
