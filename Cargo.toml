@@ -13,4 +13,4 @@ sdl2 = "*"
 
 [[bin]]
 name = "mandelwow"
-path = "mandelwow.rs"
+path = "main.rs"

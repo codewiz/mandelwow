@@ -18,7 +18,7 @@ impl AudioCallback for XmCallback {
 }
 
 pub struct SoundPlayer {
-    _device: AudioDevice<XmCallback>,
+    _device: Option<AudioDevice<XmCallback>>,
 }
 
 fn play_xm(raw_xm: &[u8]) -> SoundPlayer {
@@ -42,14 +42,21 @@ fn play_xm(raw_xm: &[u8]) -> SoundPlayer {
     device.resume();
 
     SoundPlayer {
-        _device: device,
+        _device: Some(device),
     }
 }
 
 pub fn start() -> SoundPlayer {
-    let mut xm = Vec::new();
     let filename = "flora.xm";
-    File::open(filename).unwrap()
-        .read_to_end(&mut xm).unwrap();
-    return play_xm(&xm);
+    match File::open(filename) {
+        Result::Ok(mut f) => {
+            let mut xm = Vec::new();
+            f.read_to_end(&mut xm).unwrap();
+            return play_xm(&xm);
+        },
+        Result::Err(err) => {
+            println!("Couldn't open module {}: {:?}", filename, err);
+        },
+    }
+    return SoundPlayer { _device: None };
 }

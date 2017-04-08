@@ -95,7 +95,7 @@ fn bounding_box<U>(display: &glium::Display,
 }
 
 fn main() {
-    sound::start();
+    let _soundplayer = sound::start();
 
     let display = glium::glutin::WindowBuilder::new()
         //.with_dimensions(1024, 768)
