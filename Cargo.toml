@@ -9,6 +9,7 @@ glutin = "*"
 genmesh = "0.4.1"
 obj = { version = "0.5", features = ["usegenmesh"] }
 libxm = "1.0.0"
+sdl2 = "*"
 
 [[bin]]
 name = "mandelwow"

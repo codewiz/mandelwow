@@ -5,6 +5,7 @@
 extern crate glium;
 extern crate glutin;
 extern crate libxm;
+extern crate sdl2;
 
 use glium::{DisplayBuild, Surface};
 use glium::index::{IndexBuffer, PrimitiveType};
@@ -12,9 +13,9 @@ use glutin::ElementState::Pressed;
 use glutin::Event::KeyboardInput;
 use glutin::VirtualKeyCode;
 use libxm::XMContext;
+use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
 use std::fs::File;
 use std::io::Read;
-
 
 mod support;
 
@@ -273,15 +274,52 @@ fn mandelwow(display: &glium::Display,
         mandel(&display, &mut frame, &program, &uniforms, bounds, z0);
     }
 }
-fn play_xm(raw_xm: &[u8]) {
-    let freq = 48000u32;
-    let mut xm = XMContext::new(&raw_xm, freq).unwrap();
+
+struct XmCallback {
+    xm: XMContext,
+}
+
+impl AudioCallback for XmCallback {
+    type Channel = f32;
+
+    fn callback(&mut self, out: &mut [f32]) {
+        self.xm.generate_samples(out);
+    }
+}
+
+struct SoundPlayer {
+    _device: AudioDevice<XmCallback>,
+}
+
+fn play_xm(raw_xm: &[u8]) -> SoundPlayer {
+    let sdl_context = sdl2::init().unwrap();
+    let sdl_audio = sdl_context.audio().unwrap();
+
+    let sample_rate = 48000u32;
+    let desired_spec = AudioSpecDesired {
+        freq: Some(sample_rate as i32),
+        channels: Some(2u8),
+        samples: None,
+    };
+    let device = sdl_audio.open_playback(None, &desired_spec, |actual_spec| {
+        let xm = XMContext::new(&raw_xm, actual_spec.freq as u32).unwrap();
+
+        XmCallback {
+            xm: xm,
+        }
+    }).unwrap();
+
+    device.resume();
+
+    SoundPlayer {
+        _device: device,
+    }
 }
 
 fn main() {
     let mut xm = Vec::new();
     File::open("flora.xm").unwrap().read_to_end(&mut xm).unwrap();
-    play_xm(&xm);
+    let _sound_player = play_xm(&xm);
 
     let display = glium::glutin::WindowBuilder::new()
         //.with_dimensions(1024, 768)
