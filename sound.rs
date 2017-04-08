@@ -1,5 +1,3 @@
-#[macro_use]
-
 use libxm::XMContext;
 use sdl2;
 use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};

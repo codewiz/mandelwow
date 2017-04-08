@@ -84,8 +84,8 @@ fn mandelwow_program(display: &glium::Display) -> glium::Program {
                         float zx2 = zx * zx;
                         float zy2 = zy * zy;
                         if (zx2 * zy2 > 4.0) {
-                          float index = 1.0 - float(iter) / float(maxiter);
-                          f_color = vec4(index, index * 0.5, index, index * 0.5);
+                          float index = float(iter) / float(maxiter);
+                          f_color = vec4(index, 0.1, 0.5 - index / 2, 0.8 - index);
                           return;
                         }
                         zy = zx * zy * 2.0 + c.y;
@@ -252,12 +252,13 @@ fn mandelwow(display: &glium::Display,
              bounds: &Cube,
              mandel_w: f32) {
     let mut z0 = [mandel_w, 0f32];
-    let zres = 50;
+    let zres = 30;
     let zmin = bounds.zmin;
     let zmax = bounds.zmax;
     let zstep = (zmax - zmin) / zres as f32;
     let mut zy = zmin;
-    for _ in 0..zres {
+    // zres + 1 to reach the other face of the cube (fencepost error)
+    for _ in 0..(zres + 1) {
         z0[1] = zy;
         zy += zstep;
 
@@ -307,8 +308,8 @@ fn main() {
             xmax:  0.7,
             ymin: -1.0,
             ymax:  1.0,
-            zmin: -1.2,
-            zmax:  1.2,
+            zmin: -1.1,
+            zmax:  1.1,
         };
 
         // Vary the wow factor to slice the Mandelwow along its 4th dimension.
