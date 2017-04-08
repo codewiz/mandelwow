@@ -1,6 +1,6 @@
 [package]
 name = "mandelwow"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Bernie Innocenti <bernie@codewiz.org>"]
 
 [dependencies]
