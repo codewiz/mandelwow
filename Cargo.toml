@@ -6,8 +6,9 @@ authors = ["Bernie Innocenti <bernie@codewiz.org>"]
 [dependencies]
 glium = "*"
 glutin = "*"
-genmesh = "0.4"
+genmesh = "0.4.1"
 obj = { version = "0.5", features = ["usegenmesh"] }
+libxm = "1.0.0"
 
 [[bin]]
 name = "mandelwow"
