@@ -131,11 +131,11 @@ impl CameraState {
             self.pos.2 -= f.2 * 0.01;
         }
         if self.turning_left {
-            let a: f32 = -0.05;
+            let a: f32 = 0.05;
             self.dir = Vec3(f.0 * a.cos() + f.2 * a.sin(), f.1, - f.0 * a.sin() + f.2 * a.cos());
         }
         if self.turning_right {
-            let a: f32 = 0.05;
+            let a: f32 = -0.05;
             self.dir = Vec3(f.0 * a.cos() + f.2 * a.sin(), f.1, - f.0 * a.sin() + f.2 * a.cos());
         }
         if self.turning_up {
