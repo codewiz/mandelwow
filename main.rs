@@ -4,6 +4,7 @@
 
 extern crate glium;
 extern crate glutin;
+extern crate image;
 extern crate libxm;
 extern crate sdl2;
 
@@ -18,6 +19,14 @@ mod cube;
 mod mandelwow;
 mod sound;
 mod support;
+
+fn screenshot(display : &glium::Display) {
+    let image: glium::texture::RawImage2d<u8> = display.read_front_buffer();
+    let image = image::ImageBuffer::from_raw(image.width, image.height, image.data.into_owned()).unwrap();
+    let image = image::DynamicImage::ImageRgba8(image).flipv();
+    let mut output = std::fs::File::create(&std::path::Path::new("screenshot.png")).unwrap();
+    image.save(&mut output, image::ImageFormat::PNG).unwrap();
+}
 
 fn main() {
     let _soundplayer = sound::start();
@@ -120,6 +129,9 @@ fn main() {
                 },
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::PageDown)) => {
                     t -= 0.01;
+                },
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::F10)) => {
+                    screenshot(&display);
                 },
                 ev => camera.process_input(&ev),
             }
