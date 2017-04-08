@@ -160,10 +160,10 @@ fn bounding_box<U>(display: &glium::Display,
         depth: glium::Depth {
             test: glium::draw_parameters::DepthTest::IfLess,
             write: true,
-            .. Default::default()
+            ..Default::default()
         },
         blend: glium::Blend::alpha_blending(),
-        .. Default::default()
+        ..Default::default()
     };
 
     let front_indices = IndexBuffer::new(display, PrimitiveType::LineLoop,
@@ -238,10 +238,10 @@ fn mandel<U>(display: &glium::Display,
         depth: glium::Depth {
             test: glium::draw_parameters::DepthTest::IfLess,
             write: true,
-            .. Default::default()
+            ..Default::default()
         },
         blend: glium::Blend::alpha_blending(),
-        .. Default::default()
+        ..Default::default()
     };
 
     frame.draw(&vb, &indices, program, uniforms, &params).unwrap();

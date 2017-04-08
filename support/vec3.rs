@@ -7,7 +7,7 @@ use std::ops::Sub;
 use std::ops::Mul;
 
 #[derive(Default, PartialEq, Debug, Clone, Copy)]
-pub struct Vec3 (pub f32, pub f32, pub f32);
+pub struct Vec3(pub f32, pub f32, pub f32);
 
 impl Add for Vec3 {
     type Output = Vec3;
