@@ -2,6 +2,11 @@
 name = "mandelwow"
 version = "0.3.0"
 authors = ["Bernie Innocenti <bernie@codewiz.org>"]
+license = "GPL-3.0+"
+
+[profile.release]
+lto = true
+panic = 'abort'
 
 [dependencies]
 glium = "*"
