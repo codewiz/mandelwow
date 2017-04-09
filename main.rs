@@ -110,17 +110,6 @@ fn main() {
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::B)) => {
                     bounding_box_enabled ^= true;
                 },
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::F)) => {
-                    fullscreen ^= true;
-                    if fullscreen {
-                        glutin::WindowBuilder::new()
-                            .with_fullscreen(glutin::get_primary_monitor())
-                            .rebuild_glium(&display).unwrap();
-                    } else {
-                        glutin::WindowBuilder::new()
-                            .rebuild_glium(&display).unwrap();
-                    }
-                },
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::P)) => {
                     pause ^= true;
                 },
@@ -132,6 +121,19 @@ fn main() {
                 },
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::F10)) => {
                     screenshot(&display);
+                },
+                KeyboardInput(Pressed, _, Some(VirtualKeyCode::F11)) => {
+                    fullscreen ^= true;
+                    if fullscreen {
+                        // Not implemented on Linux
+                        glutin::WindowBuilder::new()
+                            .with_fullscreen(glutin::get_primary_monitor())
+                            .with_depth_buffer(24)
+                            .rebuild_glium(&display).unwrap();
+                    } else {
+                        //glutin::WindowBuilder::new()
+                        //    .rebuild_glium(&display).unwrap();
+                    }
                 },
                 ev => camera.process_input(&ev),
             }

@@ -1,7 +1,7 @@
 extern crate glutin;
 
 use glutin::ElementState::{Pressed, Released};
-use glutin::Event::KeyboardInput;
+use glutin::Event::{KeyboardInput, MouseMoved};
 use glutin::VirtualKeyCode;
 use support::vec3::Vec3;
 use support::vec3::norm;
@@ -27,6 +27,11 @@ pub struct CameraState {
     turning_left: bool,
     turning_down: bool,
     turning_right: bool,
+
+    mouse_x: i32,
+    mouse_y: i32,
+    rel_x: i32,
+    rel_y: i32,
 }
 
 impl CameraState {
@@ -109,52 +114,53 @@ impl CameraState {
                      s.2 * f.0 - s.0 * f.2,
                      s.0 * f.1 - s.1 * f.0);
 
+        let walk_speed = 0.01;
+        let strife_speed = 0.02;
+        let pan_speed = 0.01;
+
         if self.moving_up {
-            self.pos += u * 0.01;
-        }
-        if self.moving_left {
-            self.pos.0 -= s.0 * 0.01;
-            self.pos.1 -= s.1 * 0.01;
-            self.pos.2 -= s.2 * 0.01;
+            self.pos += u * strife_speed;
         }
         if self.moving_down {
-            self.pos.0 -= u.0 * 0.01;
-            self.pos.1 -= u.1 * 0.01;
-            self.pos.2 -= u.2 * 0.01;
+            self.pos -= u * strife_speed;
+        }
+        if self.moving_left {
+            self.pos -= s * strife_speed;
         }
         if self.moving_right {
-            self.pos += s * 0.01;
+            self.pos += s * strife_speed;
         }
         if self.moving_forward {
-            self.pos += f * 0.01;
+            self.pos += f * walk_speed;
         }
         if self.moving_backward {
-            self.pos.0 -= f.0 * 0.01;
-            self.pos.1 -= f.1 * 0.01;
-            self.pos.2 -= f.2 * 0.01;
+            self.pos -= f * walk_speed;
         }
-        if self.turning_left {
-            let a: f32 = 0.05;
-            self.dir = Vec3(f.0 * a.cos() + f.2 * a.sin(), f.1, - f.0 * a.sin() + f.2 * a.cos());
-        }
-        if self.turning_right {
-            let a: f32 = -0.05;
-            self.dir = Vec3(f.0 * a.cos() + f.2 * a.sin(), f.1, - f.0 * a.sin() + f.2 * a.cos());
-        }
-        if self.turning_up {
-            let a: f32 = -0.05;
-            self.dir = Vec3(f.0, f.1 * a.cos() - f.2 * a.sin(), f.1 * a.sin() + f.2 * a.cos());
-        }
-        if self.turning_down {
-            let a: f32 = 0.05;
-            self.dir = Vec3(f.0, f.1 * a.cos() - f.2 * a.sin(), f.1 * a.sin() + f.2 * a.cos());
-        }
+
+        if self.turning_left { self.rel_x -= 2; }
+        if self.turning_right { self.rel_x += 2; }
+        if self.turning_up { self.rel_y -= 2; }
+        if self.turning_down { self.rel_y += 2; }
+        let vx = -pan_speed * self.rel_x as f32;
+        let vy = -pan_speed * self.rel_y as f32;
+        self.dir = Vec3(f.0 * vx.cos() + f.2 * vx.sin(),
+                        f.1 * vy.cos() - f.2 * vy.sin(),
+                        f.1 * vy.sin() - f.0 * vx.sin() + f.2 * vx.cos() * vy.cos());
+        self.rel_x = 0;
+        self.rel_y = 0;
+
         //println!("camera_pos = {:?}", self.pos);
         //println!("camera_dir = {:?}", self.dir);
     }
 
     pub fn process_input(&mut self, event: &glutin::Event) {
         match event {
+            &MouseMoved(x, y) => {
+                self.rel_x += x - self.mouse_x;
+                self.rel_y += y - self.mouse_y;
+                self.mouse_x = x;
+                self.mouse_y = y;
+            }
             &KeyboardInput(Pressed, _, Some(VirtualKeyCode::Up)) => {
                 self.moving_up = true;
             },

@@ -4,6 +4,7 @@ use std::f32;
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Sub;
+use std::ops::SubAssign;
 use std::ops::Mul;
 
 #[derive(Default, PartialEq, Debug, Clone, Copy)]
@@ -26,6 +27,12 @@ impl Sub for Vec3 {
     type Output = Vec3;
     fn sub(self, other: Vec3) -> Vec3 {
         Vec3(self.0 - other.0, self.1 - other.1, self.2 - other.2)
+    }
+}
+
+impl SubAssign for Vec3 {
+    fn sub_assign(&mut self, other: Vec3) {
+        *self = Vec3(self.0 - other.0, self.1 - other.1, self.2 - other.2)
     }
 }
 
