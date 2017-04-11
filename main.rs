@@ -1,13 +1,15 @@
 // Wow. Such fractal.
 
-#[macro_use]
-
+extern crate cgmath;
+#[macro_use(uniform,program,implement_vertex)]
 extern crate glium;
 extern crate glutin;
 extern crate image;
 extern crate libxm;
 extern crate sdl2;
 
+//use cgmath::prelude::*;
+use cgmath::{Euler, Matrix4, Rad, Vector3};
 use cube::Cube;
 use glium::{DisplayBuild, Surface};
 use glutin::ElementState::Pressed;
@@ -31,7 +33,7 @@ fn screenshot(display : &glium::Display) {
 fn main() {
     let _soundplayer = sound::start();
 
-    let display = glium::glutin::WindowBuilder::new()
+    let display = glutin::WindowBuilder::new()
         //.with_dimensions(1024, 768)
         .with_fullscreen(glutin::get_primary_monitor())
         .with_depth_buffer(24)
@@ -78,13 +80,12 @@ fn main() {
         let mut frame = display.draw();
         frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
+        let rotation = cgmath::Matrix4::from(
+            Euler { x: Rad(t.sin() / 3.), y: Rad(t.sin() / 2.), z: Rad(t)});
         let z_trans = -2.0;  // Send the model back a little bit so it fits the screen.
-        let model = [
-            [ t.cos(),  t.sin(),  0.0,     0.0],
-            [-t.sin(),  t.cos(),  0.0,     0.0],
-            [     0.0,  0.0,      1.0,     0.0],
-            [     0.0,  0.0,      z_trans, 1.0f32]
-        ];
+        let model2 =
+            Matrix4::from_translation(Vector3::unit_z() * z_trans) * rotation;
+        let model = cgmath::conv::array4x4(model2);
 
         // Draw the bounding box before the fractal, when the Z-buffer is still clear,
         // so the lines behind the semi-translucent areas will be drawn.
@@ -102,7 +103,7 @@ fn main() {
 
         for ev in display.poll_events() {
             match ev {
-                glium::glutin::Event::Closed |
+                glutin::Event::Closed |
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::Escape)) |
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::Q)) => {
                     return support::Action::Stop
