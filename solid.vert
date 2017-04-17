@@ -1,5 +1,5 @@
-#version 140
-in vec3 position;
+#version 100
+attribute vec3 position;
 uniform mat4 perspective;
 uniform mat4 view;
 uniform mat4 model;

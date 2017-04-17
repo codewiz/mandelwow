@@ -1,11 +1,11 @@
-// Wow. Such fractal.
-
 extern crate cgmath;
 #[macro_use(uniform,program,implement_vertex)]
 extern crate glium;
 extern crate glutin;
 extern crate image;
+#[cfg(not(target_os = "emscripten"))]
 extern crate libxm;
+#[cfg(not(target_os = "emscripten"))]
 extern crate sdl2;
 
 //use cgmath::prelude::*;
@@ -15,10 +15,15 @@ use glium::{DisplayBuild, Surface};
 use glutin::ElementState::Pressed;
 use glutin::Event::KeyboardInput;
 use glutin::VirtualKeyCode;
+use std::os::raw::{c_int, c_void};
 
 mod bounding_box;
 mod cube;
 mod mandelwow;
+#[cfg(not(target_os = "emscripten"))]
+mod sound;
+#[cfg(target_os = "emscripten")]
+#[path = "sound_emscripten.rs"]
 mod sound;
 mod support;
 
@@ -30,12 +35,36 @@ fn screenshot(display : &glium::Display) {
     image.save(&mut output, image::ImageFormat::PNG).unwrap();
 }
 
+#[allow(non_camel_case_types)]
+type em_callback_func = unsafe extern fn();
+extern {
+    fn emscripten_set_main_loop(func : em_callback_func, fps : c_int, simulate_infinite_loop : c_int);
+}
+
+thread_local!(static MAIN_LOOP_CALLBACK: std::cell::RefCell<*mut c_void> =
+              std::cell::RefCell::new(std::ptr::null_mut()));
+
+pub fn set_main_loop_callback<F>(callback : F) where F : FnMut() {
+    MAIN_LOOP_CALLBACK.with(|log| {
+            *log.borrow_mut() = &callback as *const _ as *mut c_void;
+            });
+
+    unsafe { emscripten_set_main_loop(wrapper::<F>, 0, 1); }
+
+    unsafe extern "C" fn wrapper<F>() where F : FnMut() {
+        MAIN_LOOP_CALLBACK.with(|z| {
+            let closure = *z.borrow_mut() as *mut F;
+            (*closure)();
+        });
+    }
+}
+
 fn main() {
     let _soundplayer = sound::start();
 
     let display = glutin::WindowBuilder::new()
-        //.with_dimensions(1024, 768)
-        .with_fullscreen(glutin::get_primary_monitor())
+        .with_dimensions(1024, 768)
+        //.with_fullscreen(glutin::get_primary_monitor())
         .with_depth_buffer(24)
         .with_vsync()
         .with_title(format!("MandelWow"))
@@ -61,7 +90,8 @@ fn main() {
         zmax:  1.1,
     };
 
-    support::start_loop(|| {
+    //support::start_loop(|| {
+    set_main_loop_callback(|| {
         camera.update();
 
         if !pause {
@@ -106,7 +136,7 @@ fn main() {
                 glutin::Event::Closed |
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::Escape)) |
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::Q)) => {
-                    return support::Action::Stop
+                    //return support::Action::Stop
                 },
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::B)) => {
                     bounding_box_enabled ^= true;
@@ -140,7 +170,6 @@ fn main() {
             }
         }
 
-        support::Action::Continue
+        //support::Action::Continue
     });
-
 }
