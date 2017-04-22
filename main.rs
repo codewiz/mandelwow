@@ -63,13 +63,20 @@ fn main() {
     let _soundplayer = sound::start();
 
     let display = glutin::WindowBuilder::new()
-        .with_dimensions(1024, 768)
+        .with_dimensions(300, 300)
         //.with_fullscreen(glutin::get_primary_monitor())
         .with_depth_buffer(24)
         .with_vsync()
         .with_title(format!("MandelWow"))
         .build_glium()
         .unwrap();
+
+    let version = *display.get_opengl_version();
+    let api = match version {
+        glium::Version(glium::Api::Gl, _, _) => "OpenGL",
+        glium::Version(glium::Api::GlEs, _, _) => "OpenGL ES"
+    };
+    println!("{} context verson: {}", api, display.get_opengl_version_string());
 
     let mandelwow_program = mandelwow::program(&display);
     let bounding_box_program = bounding_box::solid_fill_program(&display);
