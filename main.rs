@@ -3,9 +3,7 @@ extern crate cgmath;
 extern crate glium;
 extern crate glutin;
 extern crate image;
-#[cfg(not(target_os = "emscripten"))]
 extern crate libxm;
-#[cfg(not(target_os = "emscripten"))]
 extern crate sdl2;
 
 //use cgmath::prelude::*;
@@ -20,10 +18,6 @@ use std::os::raw::{c_int, c_void};
 mod bounding_box;
 mod cube;
 mod mandelwow;
-#[cfg(not(target_os = "emscripten"))]
-mod sound;
-#[cfg(target_os = "emscripten")]
-#[path = "sound_emscripten.rs"]
 mod sound;
 mod support;
 

@@ -15,15 +15,14 @@ glutin = "0.7.4"
 genmesh = "0.4.1"
 image = "0.12.0"
 obj = { version = "0.5", features = ["usegenmesh"] }
-
-[target.'cfg(not(target_os = "emscripten"))'.dependencies]
 libxm = "1.0.0"
 sdl2 = "*"
+
+[target.'cfg(not(target_os = "emscripten"))'.dependencies]
 backtrace = "0.2.2"
 backtrace-sys = "0.1.10"
 
 [target.'cfg(target_os = "emscripten")'.dependencies]
-glutin = "0.6.1"
 backtrace = "0.2.3"
 
 [replace]
