@@ -10,8 +10,8 @@ license = "GPL-3.0+"
 
 [dependencies]
 cgmath = "*"
-glium = "0.15.0"
-glutin = "0.6.2"
+glium = "0.16.0"
+glutin = "0.7.4"
 genmesh = "0.4.1"
 image = "0.12.0"
 obj = { version = "0.5", features = ["usegenmesh"] }
@@ -28,6 +28,8 @@ backtrace = "0.2.3"
 
 [replace]
 "backtrace:0.2.3" = { git = "https://github.com/badboy/backtrace-rs", branch = "emscripten-fix" }
+"glutin:0.7.4" = { path = "/home/bernie/src/glutin" }
+"glium:0.16.0" = { path = "/home/bernie/src/glium" }
 
 [[bin]]
 name = "mandelwow"

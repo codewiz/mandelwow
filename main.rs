@@ -35,6 +35,15 @@ fn screenshot(display : &glium::Display) {
     image.save(&mut output, image::ImageFormat::PNG).unwrap();
 }
 
+fn gl_info(display : &glium::Display) {
+    let version = *display.get_opengl_version();
+    let api = match version {
+        glium::Version(glium::Api::Gl, _, _) => "OpenGL",
+        glium::Version(glium::Api::GlEs, _, _) => "OpenGL ES"
+    };
+    println!("{} context verson: {}", api, display.get_opengl_version_string());
+}
+
 #[allow(non_camel_case_types)]
 type em_callback_func = unsafe extern fn();
 extern {
@@ -63,7 +72,7 @@ fn main() {
     let _soundplayer = sound::start();
 
     let display = glutin::WindowBuilder::new()
-        .with_dimensions(300, 300)
+        .with_dimensions(600, 600)
         //.with_fullscreen(glutin::get_primary_monitor())
         .with_depth_buffer(24)
         .with_vsync()
@@ -71,12 +80,7 @@ fn main() {
         .build_glium()
         .unwrap();
 
-    let version = *display.get_opengl_version();
-    let api = match version {
-        glium::Version(glium::Api::Gl, _, _) => "OpenGL",
-        glium::Version(glium::Api::GlEs, _, _) => "OpenGL ES"
-    };
-    println!("{} context verson: {}", api, display.get_opengl_version_string());
+    gl_info(&display);
 
     let mandelwow_program = mandelwow::program(&display);
     let bounding_box_program = bounding_box::solid_fill_program(&display);
