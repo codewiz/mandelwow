@@ -38,28 +38,37 @@ fn gl_info(display : &glium::Display) {
     println!("{} context verson: {}", api, display.get_opengl_version_string());
 }
 
+#[cfg(target_os = "emscripten")]
 #[allow(non_camel_case_types)]
 type em_callback_func = unsafe extern fn();
+#[cfg(target_os = "emscripten")]
 extern {
     fn emscripten_set_main_loop(func : em_callback_func, fps : c_int, simulate_infinite_loop : c_int);
 }
 
+#[cfg(target_os = "emscripten")]
 thread_local!(static MAIN_LOOP_CALLBACK: std::cell::RefCell<*mut c_void> =
               std::cell::RefCell::new(std::ptr::null_mut()));
 
-pub fn set_main_loop_callback<F>(callback : F) where F : FnMut() {
+#[cfg(target_os = "emscripten")]
+pub fn set_main_loop_callback<F>(callback : F) where F : FnMut() -> support::Action {
     MAIN_LOOP_CALLBACK.with(|log| {
             *log.borrow_mut() = &callback as *const _ as *mut c_void;
             });
 
     unsafe { emscripten_set_main_loop(wrapper::<F>, 0, 1); }
 
-    unsafe extern "C" fn wrapper<F>() where F : FnMut() {
+    unsafe extern "C" fn wrapper<F>() where F : FnMut() -> support::Action {
         MAIN_LOOP_CALLBACK.with(|z| {
             let closure = *z.borrow_mut() as *mut F;
             (*closure)();
         });
     }
+}
+
+#[cfg(not(target_os = "emscripten"))]
+pub fn set_main_loop_callback<F>(callback : F) where F : FnMut() -> support::Action {
+    support::start_loop(callback);
 }
 
 fn main() {
@@ -95,7 +104,6 @@ fn main() {
         zmax:  1.1,
     };
 
-    //support::start_loop(|| {
     set_main_loop_callback(|| {
         camera.update();
 
@@ -141,7 +149,7 @@ fn main() {
                 glutin::Event::Closed |
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::Escape)) |
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::Q)) => {
-                    //return support::Action::Stop
+                    return support::Action::Stop
                 },
                 KeyboardInput(Pressed, _, Some(VirtualKeyCode::B)) => {
                     bounding_box_enabled ^= true;
@@ -175,6 +183,6 @@ fn main() {
             }
         }
 
-        //support::Action::Continue
+        support::Action::Continue
     });
 }
