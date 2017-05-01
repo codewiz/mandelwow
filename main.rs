@@ -13,6 +13,8 @@ use glium::{DisplayBuild, Surface};
 use glutin::ElementState::Pressed;
 use glutin::Event::KeyboardInput;
 use glutin::VirtualKeyCode;
+
+#[cfg(target_os = "emscripten")]
 use std::os::raw::{c_int, c_void};
 
 mod bounding_box;

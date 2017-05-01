@@ -6,14 +6,14 @@ license = "GPL-3.0+"
 
 [profile.release]
 #lto = true
-#panic = 'abort'
+panic = 'abort'
 
 [dependencies]
 cgmath = "*"
 glium = "0.16.0"
 glutin = "0.7.4"
 genmesh = "0.4.1"
-image = "0.12.0"
+image = { version = "0.13.0", features = ["png_codec"] }
 obj = { version = "0.5", features = ["usegenmesh"] }
 libxm = "1.0.0"
 sdl2 = "*"
