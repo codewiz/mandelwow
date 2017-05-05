@@ -105,6 +105,7 @@ fn main() {
         zmin: -1.1,
         zmax:  1.1,
     };
+    let mandelwow_bbox = bounding_box::BoundingBox::new(&display, &bounds, &bounding_box_program);
 
     set_main_loop_callback(|| {
         camera.update();
@@ -126,7 +127,7 @@ fn main() {
         frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
         let rotation = cgmath::Matrix4::from(
-            Euler { x: Rad(t.sin() / 3.), y: Rad(t.sin() / 2.), z: Rad(t)});
+            Euler { x: Rad(t.sin() / 3.), y: Rad(t.sin() / 2.), z: Rad(t / 1.5)});
         let z_trans = -2.0;  // Send the model back a little bit so it fits the screen.
         let model2 =
             Matrix4::from_translation(Vector3::unit_z() * z_trans) * rotation;
@@ -140,7 +141,7 @@ fn main() {
                 view:  camera.get_view(),
                 perspective: camera.get_perspective(),
             };
-            bounding_box::draw(&display, &mut frame, &bounding_box_program, &uniforms, &bounds);
+            mandelwow_bbox.draw(&mut frame, &uniforms);
         }
 
         mandelwow::draw(&display, &mut frame, &mandelwow_program, model, &camera, &bounds, wow);
