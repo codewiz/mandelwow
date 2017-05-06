@@ -30,6 +30,10 @@ backtrace = "0.2.3"
 "glutin:0.7.4" = { path = "/home/bernie/src/glutin" }
 "glium:0.16.0" = { path = "/home/bernie/src/glium" }
 
+[lib]
+name = "mandelwow_lib"
+path = "lib.rs"
+
 [[bin]]
 name = "mandelwow"
 path = "main.rs"

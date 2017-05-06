@@ -1,27 +1,20 @@
+extern crate mandelwow_lib;
+
 extern crate cgmath;
-#[macro_use(uniform,program,implement_vertex)]
+#[macro_use(uniform)]
 extern crate glium;
 extern crate glutin;
 extern crate image;
-extern crate libxm;
-extern crate sdl2;
 
-//use cgmath::prelude::*;
 use cgmath::{Euler, Matrix4, Rad, Vector3};
-use cube::Cube;
 use glium::{DisplayBuild, Surface};
 use glutin::ElementState::Pressed;
 use glutin::Event::KeyboardInput;
 use glutin::VirtualKeyCode;
+use mandelwow_lib::*;
 
 #[cfg(target_os = "emscripten")]
 use std::os::raw::{c_int, c_void};
-
-mod bounding_box;
-mod cube;
-mod mandelwow;
-mod sound;
-mod support;
 
 fn screenshot(display : &glium::Display) {
     let image: glium::texture::RawImage2d<u8> = display.read_front_buffer();
@@ -126,7 +119,7 @@ fn main() {
         let mut frame = display.draw();
         frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
-        let rotation = cgmath::Matrix4::from(
+        let rotation = Matrix4::from(
             Euler { x: Rad(t.sin() / 3.), y: Rad(t.sin() / 2.), z: Rad(t / 1.5)});
         let z_trans = -2.0;  // Send the model back a little bit so it fits the screen.
         let model2 =
