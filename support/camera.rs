@@ -37,7 +37,7 @@ pub struct CameraState {
 impl CameraState {
     pub fn new() -> CameraState {
         CameraState {
-            aspect_ratio: 1024.0 / 768.0,
+            aspect_ratio: 600.0 / 600.0,
             pos: Vec3(0.0, 0.0, 0.0),
             dir: Vec3(0.0, 0.0, -1.0),
             .. Default::default()
