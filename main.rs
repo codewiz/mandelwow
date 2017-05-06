@@ -6,7 +6,8 @@ extern crate glium;
 extern crate glutin;
 extern crate image;
 
-use cgmath::{Euler, Matrix4, Rad, Vector3};
+use cgmath::{Euler, Matrix4, One, Rad, Vector3};
+use cgmath::conv::array4x4;
 use glium::{DisplayBuild, Surface};
 use glutin::ElementState::Pressed;
 use glutin::Event::KeyboardInput;
@@ -82,6 +83,7 @@ fn main() {
 
     let mandelwow_program = mandelwow::program(&display);
     let bounding_box_program = bounding_box::solid_fill_program(&display);
+    let shaded_program = shaded_cube::shaded_program(&display);
 
     let mut camera = support::camera::CameraState::new();
     let mut t: f32 = 0.0;
@@ -99,6 +101,27 @@ fn main() {
         zmax:  1.1,
     };
     let mandelwow_bbox = bounding_box::BoundingBox::new(&display, &bounds, &bounding_box_program);
+    let shaded_cube = ShadedCube::new(&display, &Cube::default(), &shaded_program);
+
+    const SEA_XSIZE: usize = 24;
+    const SEA_ZSIZE: usize = 20;
+    let sea_xmin = -14.0f32;
+    let sea_xmax =  14.0f32;
+    let sea_zmin =  -2.0f32;
+    let sea_zmax = -26.0f32;
+    let sea_xstep = (sea_xmax - sea_xmin) / (SEA_XSIZE as f32);
+    let sea_zstep = (sea_zmax - sea_zmin) / (SEA_ZSIZE as f32);
+
+    let mut sea = [[Matrix4::one(); SEA_ZSIZE]; SEA_XSIZE];
+    for x in 0..SEA_XSIZE {
+        for z in 0..SEA_ZSIZE {
+            sea[x][z] = Matrix4::from_translation(Vector3{
+                x: sea_xmin + (x as f32) * sea_xstep,
+                y: -3.0,
+                z: sea_zmin + (z as f32) * sea_zstep,
+            });
+        }
+     }
 
     set_main_loop_callback(|| {
         camera.update();
@@ -124,7 +147,7 @@ fn main() {
         let z_trans = -2.0;  // Send the model back a little bit so it fits the screen.
         let model2 =
             Matrix4::from_translation(Vector3::unit_z() * z_trans) * rotation;
-        let model = cgmath::conv::array4x4(model2);
+        let model = array4x4(model2);
 
         // Draw the bounding box before the fractal, when the Z-buffer is still clear,
         // so the lines behind the semi-translucent areas will be drawn.
@@ -135,6 +158,17 @@ fn main() {
                 perspective: camera.get_perspective(),
             };
             mandelwow_bbox.draw(&mut frame, &uniforms);
+        }
+
+        for x in 0..SEA_XSIZE {
+            for z in 0..SEA_ZSIZE {
+                let uniforms = uniform! {
+                    model: array4x4(sea[x][z]),
+                    view:  camera.get_view(),
+                    perspective: camera.get_perspective(),
+                };
+                shaded_cube.draw(&mut frame, &uniforms);
+            }
         }
 
         mandelwow::draw(&display, &mut frame, &mandelwow_program, model, &camera, &bounds, wow);
