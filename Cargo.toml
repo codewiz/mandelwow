@@ -1,6 +1,6 @@
 [package]
 name = "mandelwow"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Bernie Innocenti <bernie@codewiz.org>"]
 license = "GPL-3.0+"
 
