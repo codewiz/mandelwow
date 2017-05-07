@@ -14,7 +14,7 @@ void main() {
     mat4 m = perspective * modelview;
     vec3 dark = vec3(0.0, 0.0, 0.1);
     vec3 bright = vec3(0.0, 0.0, 0.9);
-    vec3 u_light = vec3(-0.5, -0.5, -1.);
+    vec3 u_light = vec3(-0.5, -0.7, -0.6);
     vec3 v_normal = transpose(inverse(mat3(model))) * normal;
     float brightness = max(dot(normalize(v_normal), normalize(u_light)), 0.0);
     color = vec4(mix(dark, bright, brightness), 1.0);
