@@ -13,6 +13,7 @@ use glutin::ElementState::Pressed;
 use glutin::Event::KeyboardInput;
 use glutin::VirtualKeyCode;
 use mandelwow_lib::*;
+use std::f32::consts::PI;
 
 #[cfg(target_os = "emscripten")]
 use std::os::raw::{c_int, c_void};
@@ -71,7 +72,7 @@ fn main() {
     let _soundplayer = sound::start();
 
     let display = glutin::WindowBuilder::new()
-        .with_dimensions(600, 600)
+        .with_dimensions(1280, 720)
         //.with_fullscreen(glutin::get_primary_monitor())
         .with_depth_buffer(24)
         .with_vsync()
@@ -107,6 +108,7 @@ fn main() {
     const SEA_ZSIZE: usize = 20;
     let sea_xmin = -14.0f32;
     let sea_xmax =  14.0f32;
+    let sea_y = -2.5;
     let sea_zmin =  -2.0f32;
     let sea_zmax = -26.0f32;
     let sea_xstep = (sea_xmax - sea_xmin) / (SEA_XSIZE as f32);
@@ -117,7 +119,7 @@ fn main() {
         for z in 0..SEA_ZSIZE {
             sea[x][z] = Matrix4::from_translation(Vector3{
                 x: sea_xmin + (x as f32) * sea_xstep,
-                y: -3.0,
+                y: sea_y,
                 z: sea_zmin + (z as f32) * sea_zstep,
             });
         }
@@ -144,7 +146,7 @@ fn main() {
 
         let rotation = Matrix4::from(
             Euler { x: Rad(t.sin() / 3.), y: Rad(t.sin() / 2.), z: Rad(t / 1.5)});
-        let z_trans = -2.0;  // Send the model back a little bit so it fits the screen.
+        let z_trans = -3.0;  // Send the model back a little bit so it fits the screen.
         let model2 =
             Matrix4::from_translation(Vector3::unit_z() * z_trans) * rotation;
         let model = array4x4(model2);
@@ -162,8 +164,12 @@ fn main() {
 
         for x in 0..SEA_XSIZE {
             for z in 0..SEA_ZSIZE {
+                let wave = (((x as f32 / SEA_XSIZE as f32 * PI * 5.0 + t * 2.0)).sin() +
+                            ((z as f32 / SEA_ZSIZE as f32 * PI * 3.0 + t * 3.0)).sin()) * 0.3;
+                let model = Matrix4::from_translation(
+                    Vector3{x: 0., y: wave, z: 0.}) * sea[x][z];
                 let uniforms = uniform! {
-                    model: array4x4(sea[x][z]),
+                    model: array4x4(model),
                     view:  camera.get_view(),
                     perspective: camera.get_perspective(),
                 };
