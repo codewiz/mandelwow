@@ -6,7 +6,7 @@ extern crate glium;
 extern crate glutin;
 extern crate image;
 
-use cgmath::{Euler, Matrix4, One, Rad, Vector3};
+use cgmath::{Euler, Matrix4, Rad, Vector3, Zero};
 use cgmath::conv::array4x4;
 use glium::{DisplayBuild, Surface};
 use glutin::ElementState::Pressed;
@@ -114,16 +114,16 @@ fn main() {
     let sea_xstep = (sea_xmax - sea_xmin) / (SEA_XSIZE as f32);
     let sea_zstep = (sea_zmax - sea_zmin) / (SEA_ZSIZE as f32);
 
-    let mut sea = [[Matrix4::one(); SEA_ZSIZE]; SEA_XSIZE];
+    let mut sea = [[Vector3::zero(); SEA_ZSIZE]; SEA_XSIZE];
     for x in 0..SEA_XSIZE {
         for z in 0..SEA_ZSIZE {
-            sea[x][z] = Matrix4::from_translation(Vector3{
+            sea[x][z] = Vector3 {
                 x: sea_xmin + (x as f32) * sea_xstep,
                 y: sea_y,
                 z: sea_zmin + (z as f32) * sea_zstep,
-            });
+            };
         }
-     }
+    }
 
     set_main_loop_callback(|| {
         camera.update();
@@ -166,8 +166,7 @@ fn main() {
             for z in 0..SEA_ZSIZE {
                 let wave = (((x as f32 / SEA_XSIZE as f32 * PI * 5.0 + t * 2.0)).sin() +
                             ((z as f32 / SEA_ZSIZE as f32 * PI * 3.0 + t * 3.0)).sin()) * 0.3;
-                let model = Matrix4::from_translation(
-                    Vector3{x: 0., y: wave, z: 0.}) * sea[x][z];
+                let model = Matrix4::from_translation(sea[x][z] + Vector3 {x: 0., y: wave, z: 0.});
                 let uniforms = uniform! {
                     model: array4x4(model),
                     view:  camera.get_view(),
