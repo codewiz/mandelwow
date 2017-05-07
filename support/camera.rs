@@ -37,9 +37,11 @@ pub struct CameraState {
 impl CameraState {
     pub fn new() -> CameraState {
         CameraState {
-            aspect_ratio: 600.0 / 600.0,
+            aspect_ratio: 1280.0 / 720.0,
             pos: Vec3(0.0, 0.0, 0.0),
             dir: Vec3(0.0, 0.0, -1.0),
+            mouse_x: -1,
+            mouse_y: -1,
             .. Default::default()
         }
     }
@@ -116,7 +118,7 @@ impl CameraState {
 
         let walk_speed = 0.01;
         let strife_speed = 0.02;
-        let pan_speed = 0.01;
+        let pan_speed = 0.001;
 
         if self.moving_up {
             self.pos += u * strife_speed;
@@ -137,8 +139,8 @@ impl CameraState {
             self.pos -= f * walk_speed;
         }
 
-        if self.turning_left { self.rel_x -= 2; }
-        if self.turning_right { self.rel_x += 2; }
+        if self.turning_left { self.rel_x -= 8; }
+        if self.turning_right { self.rel_x += 8; }
         if self.turning_up { self.rel_y -= 2; }
         if self.turning_down { self.rel_y += 2; }
         let vx = -pan_speed * self.rel_x as f32;
@@ -156,6 +158,11 @@ impl CameraState {
     pub fn process_input(&mut self, event: &glutin::Event) {
         match event {
             &MouseMoved(x, y) => {
+                if self.mouse_x == -1 {
+                    // Set initial absolute position.
+                    self.mouse_x = x;
+                    self.mouse_y = y;
+                }
                 self.rel_x += x - self.mouse_x;
                 self.rel_y += y - self.mouse_y;
                 self.mouse_x = x;
