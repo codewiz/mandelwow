@@ -18,7 +18,7 @@ Install cargo, then simply type:
 cargo run --release
 ```
 
-### asm.js
+### WebAssembly / asm.js
 
 Install emsdk 1.36.14:
 
@@ -47,7 +47,7 @@ Build and run mandelwow:
 
 ```
 cd mandelwow
-./release.sh
+./release_asmjs.sh
 ```
 
 Build the WebAssembly binary:
