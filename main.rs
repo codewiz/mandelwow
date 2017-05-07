@@ -127,6 +127,7 @@ fn main() {
 
     set_main_loop_callback(|| {
         camera.update();
+        let perspview = camera.get_perspview();
 
         if !pause {
             // Increment time
@@ -169,8 +170,7 @@ fn main() {
                 let model = Matrix4::from_translation(sea[x][z] + Vector3 {x: 0., y: wave, z: 0.});
                 let uniforms = uniform! {
                     model: array4x4(model),
-                    view:  camera.get_view(),
-                    perspective: camera.get_perspective(),
+                    perspview: perspview,
                 };
                 shaded_cube.draw(&mut frame, &uniforms);
             }

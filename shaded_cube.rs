@@ -25,10 +25,10 @@ pub struct ShadedCube<'a> {
 impl<'a> ShadedCube<'a> {
     pub fn new(display: &Display, c: &Cube, program: &'a Program) -> ShadedCube<'a> {
         //      x--->
-        //      4 ──────┐ 5   
+        //      4 ──────┐ 5
         //      ╱┆     ╱│
         //   0 ┌─────┐1 │
-        // y   │ 7+┄┄│┄┄+ 6 
+        // y   │ 7+┄┄│┄┄+ 6
         // |   │╱    │ ╱   /
         // v   └─────┘    z
         //    3       2

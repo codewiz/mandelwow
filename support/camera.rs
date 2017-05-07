@@ -1,8 +1,11 @@
 extern crate glutin;
 
+use cgmath::{Matrix4, Vector4};
+use cgmath::conv::array4x4;
 use glutin::ElementState::{Pressed, Released};
 use glutin::Event::{KeyboardInput, MouseMoved};
 use glutin::VirtualKeyCode;
+use std::f32::consts::PI;
 use support::vec3::Vec3;
 use support::vec3::norm;
 
@@ -13,7 +16,7 @@ use std::f32;
 
 #[derive(Default)]
 pub struct CameraState {
-    aspect_ratio: f32,
+    aspect: f32,
     pos: Vec3,
     dir: Vec3,
 
@@ -37,7 +40,7 @@ pub struct CameraState {
 impl CameraState {
     pub fn new() -> CameraState {
         CameraState {
-            aspect_ratio: 1280.0 / 720.0,
+            aspect: 1280.0 / 720.0,
             pos: Vec3(0.0, 0.0, 0.0),
             dir: Vec3(0.0, 0.0, -1.0),
             mouse_x: -1,
@@ -58,23 +61,23 @@ impl CameraState {
         self.dir = dir;
     }
 
-    pub fn get_perspective(&self) -> [[f32; 4]; 4] {
-        let fov: f32 = 3.141592 / 2.0;
+    pub fn get_persp_mat(&self) -> Matrix4<f32> {
+        let fov: f32 = PI / 2.0;
         let zfar = 1024.0;
         let znear = 0.1;
 
         let f = 1.0 / (fov / 2.0).tan();
 
         // note: remember that this is column-major, so the lines of code are actually columns
-        [
-            [f / self.aspect_ratio,    0.0,              0.0              ,   0.0],
-            [         0.0         ,     f ,              0.0              ,   0.0],
-            [         0.0         ,    0.0,  (zfar+znear)/(zfar-znear)    ,   1.0],
-            [         0.0         ,    0.0, -(2.0*zfar*znear)/(zfar-znear),   0.0],
-        ]
+        Matrix4 {
+            x: Vector4{ x: f / self.aspect, y: 0.0, z:  0.0,                           w: 0.0 },
+            y: Vector4{ x: 0.0,             y: f,   z:  0.0,                           w: 0.0 },
+            z: Vector4{ x: 0.0,             y: 0.0, z:  (zfar+znear)/(zfar-znear),     w: 1.0 },
+            w: Vector4{ x: 0.0,             y: 0.0, z: -(2.0*zfar*znear)/(zfar-znear), w: 0.0 },
+        }
     }
 
-    pub fn get_view(&self) -> [[f32; 4]; 4] {
+    pub fn get_view_mat(&self) -> Matrix4<f32> {
         let f = norm(&self.dir);
 
         let up = Vec3(0.0, 1.0, 0.0);
@@ -93,12 +96,24 @@ impl CameraState {
                  -self.pos.0 * f.0 - self.pos.1 * f.1 - self.pos.2 * f.2);
 
         // note: remember that this is column-major, so the lines of code are actually columns
-        [
-            [sn.0, u.0, f.0, 0.0],
-            [sn.1, u.1, f.1, 0.0],
-            [sn.2, u.2, f.2, 0.0],
-            [p.0,  p.1, p.2, 1.0],
-        ]
+        Matrix4{
+            x: Vector4{ x: sn.0, y: u.0, z: f.0, w: 0.0 },
+            y: Vector4{ x: sn.1, y: u.1, z: f.1, w: 0.0 },
+            z: Vector4{ x: sn.2, y: u.2, z: f.2, w: 0.0 },
+            w: Vector4{ x:  p.0, y: p.1, z: p.2, w: 1.0 },
+        }
+    }
+
+    pub fn get_perspview(&self) -> [[f32; 4]; 4] {
+        array4x4(self.get_persp_mat() * self.get_view_mat())
+    }
+
+    pub fn get_perspective(&self) -> [[f32; 4]; 4] {
+        array4x4(self.get_persp_mat())
+    }
+
+    pub fn get_view(&self) -> [[f32; 4]; 4] {
+        array4x4(self.get_view_mat())
     }
 
     pub fn update(&mut self) {

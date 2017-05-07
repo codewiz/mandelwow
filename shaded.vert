@@ -5,13 +5,11 @@ in vec3 position;
 in vec3 normal;
 out vec4 color;
 
-uniform mat4 perspective;
-uniform mat4 view;
 uniform mat4 model;
+uniform mat4 perspview;
 
 void main() {
-    mat4 modelview = view * model;
-    mat4 m = perspective * modelview;
+    mat4 m = perspview * model;
     vec3 dark = vec3(0.0, 0.0, 0.1);
     vec3 bright = vec3(0.0, 0.0, 0.9);
     vec3 u_light = vec3(-0.5, -0.7, -0.6);
