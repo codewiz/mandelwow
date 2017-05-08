@@ -14,6 +14,7 @@ use glutin::Event::KeyboardInput;
 use glutin::VirtualKeyCode;
 use mandelwow_lib::*;
 use std::f32::consts::PI;
+use std::time::{Duration, Instant};
 
 #[cfg(target_os = "emscripten")]
 use std::os::raw::{c_int, c_void};
@@ -125,6 +126,10 @@ fn main() {
         }
     }
 
+    let mut frame_cnt = 0;
+    let mut last_report_time = Instant::now();
+    let mut last_report_frame_cnt = 0;
+
     set_main_loop_callback(|| {
         camera.update();
         let perspview = camera.get_perspview();
@@ -216,6 +221,16 @@ fn main() {
                 },
                 ev => camera.process_input(&ev),
             }
+        }
+
+        frame_cnt += 1;
+        let now = Instant::now();
+        if now - last_report_time > Duration::from_secs(10) {
+            let fps = (frame_cnt - last_report_frame_cnt) as f32 /
+                (now - last_report_time).as_secs() as f32;
+            println!("fps={}", fps);
+            last_report_time = now;
+            last_report_frame_cnt = frame_cnt;
         }
 
         support::Action::Continue
