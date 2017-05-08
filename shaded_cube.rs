@@ -93,7 +93,7 @@ impl<'a> ShadedCube<'a> {
                 write: true,
                 ..Default::default()
             },
-            blend: glium::Blend::alpha_blending(),
+            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise,
             ..Default::default()
         };
         frame.draw(&self.vertexes, &self.indices, &self.program, uniforms, &params).unwrap();
