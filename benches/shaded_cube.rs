@@ -18,10 +18,11 @@ fn bench_shaded_cube(b: &mut test::Bencher) {
     let cube = ShadedCube::new(&display, &bounds, &program);
     let mut frame = display.draw();
     b.iter(|| {
-        let mat = [[1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 1., 0.], [0., 0., 0., 1.0f32]];
+        let model =     [[0.7, 0.5, -0.5, 0.0], [0.0, 0.7, 0.7, 0.0], [0.7, -0.5,  0.5,  0.0], [0., 0., -3.0, 1.0f32]];
+        let perspview = [[0.5, 0.0,  0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0,  0.0, -1.0, -1.0], [0., 0., -0.2, 0.0f32]];
         let uniforms = uniform! {
-            model: mat,
-            viewpersp: mat,
+            model: model,
+            perspview: perspview,
         };
         cube.draw(&mut frame, &uniforms);
     });
