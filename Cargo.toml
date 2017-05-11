@@ -18,15 +18,7 @@ obj = { version = "0.5", features = ["usegenmesh"] }
 libxm = "1.0.0"
 sdl2 = "*"
 
-[target.'cfg(not(target_os = "emscripten"))'.dependencies]
-backtrace = "0.2.2"
-backtrace-sys = "0.1.10"
-
-[target.'cfg(target_os = "emscripten")'.dependencies]
-backtrace = "0.2.3"
-
 [replace]
-"backtrace:0.2.3" = { git = "https://github.com/badboy/backtrace-rs", branch = "emscripten-fix" }
 "glutin:0.7.4" = { path = "/home/bernie/src/glutin" }
 "glium:0.16.0" = { path = "/home/bernie/src/glium" }
 
