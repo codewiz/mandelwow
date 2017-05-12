@@ -12,7 +12,7 @@ void main() {
         float zy2 = zy * zy;
         if (zx2 * zy2 > 4.0) {
           float index = float(iter) / float(maxiter);
-          gl_FragColor = vec4(index, 0.1, 1.0 - index / 2.0, 0.8 - index);
+          gl_FragColor = vec4(index, 0.1, 1.0 - index / 2.0, 0.8 - index * index);
           return;
         }
         zy = zx * zy * 2.0 + c.y;
