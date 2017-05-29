@@ -18,9 +18,9 @@ obj = { version = "0.5", features = ["usegenmesh"] }
 libxm = "1.0.0"
 sdl2 = "*"
 
-[replace]
-"glutin:0.7.4" = { path = "/home/bernie/src/glutin" }
-"glium:0.16.0" = { path = "/home/bernie/src/glium" }
+#[replace]
+#"glutin:0.7.4" = { path = "/home/bernie/src/glutin" }
+#"glium:0.16.0" = { path = "/home/bernie/src/glium" }
 
 [lib]
 name = "mandelwow_lib"
