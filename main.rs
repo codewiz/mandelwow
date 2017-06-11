@@ -129,15 +129,12 @@ fn main() {
     let mut frame_cnt = 0;
     let mut last_report_time = Instant::now();
     let mut last_report_frame_cnt = 0;
+    let mut accum_draw_time = Duration::new(0, 0);
+    let mut accum_idle_time = Duration::new(0, 0);
 
     set_main_loop_callback(|| {
         camera.update();
         let perspview = camera.get_perspview();
-
-        if !pause {
-            // Increment time
-            t += 0.01;
-        }
 
         // Vary the wow factor to slice the Mandelwow along its 4th dimension.
         let wmin = -0.8;
@@ -147,8 +144,10 @@ fn main() {
 
         //println!("t={} w={:?} camera={:?}", t, w, camera.get_pos());
 
+        let time_before_swap = Instant::now();
         let mut frame = display.draw();
         frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
+        let time_before_draw = Instant::now();
 
         let rotation = Matrix4::from(
             Euler { x: Rad(t.sin() / 3.), y: Rad(t.sin() / 2.), z: Rad(t / 1.5)});
@@ -176,13 +175,16 @@ fn main() {
                 let uniforms = uniform! {
                     model: array4x4(model),
                     perspview: perspview,
+                    col: [0., (1. - wave).abs() * 0.5,  wave.abs()],
                 };
                 shaded_cube.draw(&mut frame, &uniforms);
             }
         }
 
         mandelwow::draw(&display, &mut frame, &mandelwow_program, model, &camera, &bounds, wow);
+
         frame.finish().unwrap();
+        let time_after_draw = Instant::now();
 
         for ev in display.poll_events() {
             match ev {
@@ -223,14 +225,29 @@ fn main() {
             }
         }
 
-        frame_cnt += 1;
         let now = Instant::now();
-        if now - last_report_time > Duration::from_secs(10) {
-            let fps = (frame_cnt - last_report_frame_cnt) as f32 /
-                (now - last_report_time).as_secs() as f32;
-            println!("fps={}", fps);
+        frame_cnt += 1;
+        accum_idle_time += time_before_draw - time_before_swap;
+        accum_draw_time += time_after_draw - time_before_draw;
+        if now - last_report_time > Duration::from_secs(5) {
+            fn millis(d : Duration) -> f32 {
+                d.as_secs() as f32 * 1e3 + d.subsec_nanos() as f32 / 1e6
+            }
+            let frames_done = frame_cnt - last_report_frame_cnt;
+            let fps = frames_done as f32 / (now - last_report_time).as_secs() as f32;
+            let avg_draw_time = millis(accum_draw_time / frames_done);
+            let avg_idle_time = millis(accum_idle_time / frames_done);
+            println!("fps={:.1} draw={:.1}ms idle={:.1}ms", fps, avg_draw_time, avg_idle_time);
+
             last_report_time = now;
             last_report_frame_cnt = frame_cnt;
+            accum_draw_time = Duration::new(0, 0);
+            accum_idle_time = Duration::new(0, 0);
+        }
+
+        if !pause {
+            // Increment time
+            t += 0.01;
         }
 
         support::Action::Continue
