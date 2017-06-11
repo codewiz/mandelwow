@@ -70,10 +70,11 @@ pub fn set_main_loop_callback<F>(callback : F) where F : FnMut() -> support::Act
 }
 
 fn main() {
-    let _soundplayer = sound::start();
+    let mut soundplayer = sound::start();
 
     let display = glutin::WindowBuilder::new()
         .with_dimensions(1280, 720)
+        .with_gl_profile(glutin::GlProfile::Core)
         //.with_fullscreen(glutin::get_primary_monitor())
         .with_depth_buffer(24)
         .with_vsync()
@@ -133,6 +134,7 @@ fn main() {
     let mut accum_idle_time = Duration::new(0, 0);
 
     set_main_loop_callback(|| {
+        let _ = sound::hit_event(&mut soundplayer);
         camera.update();
         let perspview = camera.get_perspview();
 

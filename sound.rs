@@ -5,6 +5,8 @@ use std::fs::File;
 use std::io::Read;
 
 
+const SAMPLE_RATE: i32 = 48000;
+
 struct XmCallback {
     xm: XMContext,
 }
@@ -18,16 +20,15 @@ impl AudioCallback for XmCallback {
 }
 
 pub struct SoundPlayer {
-    _device: Option<AudioDevice<XmCallback>>,
+    device: Option<AudioDevice<XmCallback>>,
 }
 
 fn play_xm(raw_xm: &[u8]) -> SoundPlayer {
     let sdl_context = sdl2::init().unwrap();
     let sdl_audio = sdl_context.audio().unwrap();
 
-    let sample_rate = 48000u32;
     let desired_spec = AudioSpecDesired {
-        freq: Some(sample_rate as i32),
+        freq: Some(SAMPLE_RATE),
         channels: Some(2u8),
         samples: None,
     };
@@ -42,7 +43,7 @@ fn play_xm(raw_xm: &[u8]) -> SoundPlayer {
     device.resume();
 
     SoundPlayer {
-        _device: Some(device),
+        device: Some(device),
     }
 }
 
@@ -58,5 +59,16 @@ pub fn start() -> SoundPlayer {
             println!("Couldn't open module {}: {:?}", filename, err);
         },
     }
-    return SoundPlayer { _device: None };
+    return SoundPlayer { device: None };
+}
+
+pub fn hit_event(player: &mut SoundPlayer) -> f32 {
+    use std::ops::Deref;
+    let maybe_audio_device = &mut player.device;
+    let audio_device = &mut maybe_audio_device.as_mut().unwrap();
+    let audio_device_lock = audio_device.lock();
+    let xm_callback = audio_device_lock.deref();
+    let xm = &xm_callback.xm;
+    let n_samples = xm.latest_trigger_of_instrument(0x1D);
+    return n_samples as f32 / SAMPLE_RATE as f32;
 }
