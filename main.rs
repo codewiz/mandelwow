@@ -6,7 +6,7 @@ extern crate glium;
 extern crate glutin;
 extern crate image;
 
-use cgmath::{Euler, Matrix4, Rad, Vector3, Zero};
+use cgmath::{Euler, Matrix4, Rad, SquareMatrix, Vector3, Vector4, Zero};
 use cgmath::conv::array4x4;
 use glium::{DisplayBuild, Surface};
 use glutin::ElementState::Pressed;
@@ -133,8 +133,17 @@ fn main() {
     let mut accum_draw_time = Duration::new(0, 0);
     let mut accum_idle_time = Duration::new(0, 0);
 
+    let mut last_hit = 0.0f32;
+    let mut hit_time = 0.0f32;
     set_main_loop_callback(|| {
-        let _ = sound::hit_event(&mut soundplayer);
+        let new_hit = sound::hit_event(&mut soundplayer);
+        if new_hit != last_hit {
+            hit_time = t;
+        }
+        last_hit = new_hit;
+        let hit_delta = t - hit_time;
+        let hit_scale = 1. / (1. + hit_delta * hit_delta * 15.0) + 1.;
+
         camera.update();
         let perspview = camera.get_perspview();
 
@@ -154,8 +163,10 @@ fn main() {
         let rotation = Matrix4::from(
             Euler { x: Rad(t.sin() / 3.), y: Rad(t.sin() / 2.), z: Rad(t / 1.5)});
         let z_trans = -3.0;  // Send the model back a little bit so it fits the screen.
+        let scale =
+            Matrix4::from_diagonal(Vector4::new(hit_scale, hit_scale, hit_scale, 1.0));
         let model2 =
-            Matrix4::from_translation(Vector3::unit_z() * z_trans) * rotation;
+            Matrix4::from_translation(Vector3::unit_z() * z_trans) * rotation * scale;
         let model = array4x4(model2);
 
         // Draw the bounding box before the fractal, when the Z-buffer is still clear,
