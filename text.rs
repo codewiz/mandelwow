@@ -70,6 +70,7 @@ impl<'a> Text<'a> {
 
                 uniform mat4 model;
                 uniform mat4 perspview;
+                uniform int index;
 
                 in vec2 position;
                 in vec2 tex_coords;
@@ -78,9 +79,12 @@ impl<'a> Text<'a> {
 
                 void main() {
                     gl_Position = perspview * model * vec4(position, 0.0, 1.0);
+
                     // Characters are arranged in a 16x16 square.
                     // Texture oordinates originate in the bottom-left corner.
-                    v_tex_coords = (tex_coords) / 16.0 + vec2(0. / 16., 15. / 16.);
+                    int xpos = index % 16;
+                    int ypos = 15 - index / 16;
+                    v_tex_coords = (tex_coords) / 16.0 + vec2(xpos / 16., ypos / 16.);
                 }
             ",
 
@@ -121,8 +125,8 @@ impl<'a> Text<'a> {
             model: array4x4(self.model),
             perspview: *perspview,
             tex: self.tex.sampled()
-                //.minify_filter(glium::uniforms::MinifySamplerFilter::Nearest)
                 .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
+            index: 'A' as i32,
         };
         frame
             .draw(
