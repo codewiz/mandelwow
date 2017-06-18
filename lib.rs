@@ -2,6 +2,7 @@ extern crate cgmath;
 #[macro_use(uniform,program,implement_vertex)]
 extern crate glium;
 extern crate glutin;
+extern crate image;
 extern crate libxm;
 extern crate sdl2;
 
@@ -11,7 +12,17 @@ pub mod mandelwow;
 pub mod shaded_cube;
 pub mod sound;
 pub mod support;
+pub mod text;
 
 pub use bounding_box::BoundingBox;
 pub use cube::Cube;
 pub use shaded_cube::ShadedCube;
+
+pub fn screenshot(display : &glium::Display) {
+    let image: glium::texture::RawImage2d<u8> = display.read_front_buffer();
+    let image = image::ImageBuffer::from_raw(image.width, image.height, image.data.into_owned()).unwrap();
+    let image = image::DynamicImage::ImageRgba8(image).flipv();
+    let mut output = std::fs::File::create(&std::path::Path::new("screenshot.png")).unwrap();
+    image.save(&mut output, image::ImageFormat::PNG).unwrap();
+}
+

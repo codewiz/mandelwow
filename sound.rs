@@ -29,8 +29,8 @@ fn play_xm(raw_xm: &[u8]) -> SoundPlayer {
 
     let desired_spec = AudioSpecDesired {
         freq: Some(SAMPLE_RATE),
-        channels: Some(2u8),
-        samples: None,
+        channels: Some(2),
+        samples: Some(4096),  // 85ms
     };
     let device = sdl_audio.open_playback(None, &desired_spec, |actual_spec| {
         let xm = XMContext::new(&raw_xm, actual_spec.freq as u32).unwrap();

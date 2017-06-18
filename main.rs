@@ -4,7 +4,6 @@ extern crate cgmath;
 #[macro_use(uniform)]
 extern crate glium;
 extern crate glutin;
-extern crate image;
 
 use cgmath::{Euler, Matrix4, Rad, SquareMatrix, Vector3, Vector4, Zero};
 use cgmath::conv::array4x4;
@@ -18,14 +17,6 @@ use std::time::{Duration, Instant};
 
 #[cfg(target_os = "emscripten")]
 use std::os::raw::{c_int, c_void};
-
-fn screenshot(display : &glium::Display) {
-    let image: glium::texture::RawImage2d<u8> = display.read_front_buffer();
-    let image = image::ImageBuffer::from_raw(image.width, image.height, image.data.into_owned()).unwrap();
-    let image = image::DynamicImage::ImageRgba8(image).flipv();
-    let mut output = std::fs::File::create(&std::path::Path::new("screenshot.png")).unwrap();
-    image.save(&mut output, image::ImageFormat::PNG).unwrap();
-}
 
 fn gl_info(display : &glium::Display) {
     let version = *display.get_opengl_version();
@@ -84,6 +75,7 @@ fn main() {
 
     gl_info(&display);
 
+    let text = text::Text::new(&display);
     let mandelwow_program = mandelwow::program(&display);
     let bounding_box_program = bounding_box::solid_fill_program(&display);
     let shaded_program = shaded_cube::shaded_program(&display);
@@ -195,6 +187,8 @@ fn main() {
         }
 
         mandelwow::draw(&display, &mut frame, &mandelwow_program, model, &camera, &bounds, wow);
+
+        text.draw(&mut frame, &perspview);
 
         frame.finish().unwrap();
         let time_after_draw = Instant::now();
