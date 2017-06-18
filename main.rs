@@ -69,6 +69,7 @@ fn main() {
         //.with_fullscreen(glutin::get_primary_monitor())
         .with_depth_buffer(24)
         .with_vsync()
+        .with_srgb(Some(true))
         .with_title(format!("MandelWow"))
         .build_glium()
         .unwrap();

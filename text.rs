@@ -3,7 +3,7 @@ use cgmath::{Matrix4, One};
 use glium;
 use glium::{Surface, texture};
 use image;
-use std::io::Cursor;
+use std;
 
 #[derive(Copy, Clone)]
 struct Vertex {
@@ -13,7 +13,7 @@ struct Vertex {
 implement_vertex!(Vertex, position, tex_coords);
 
 pub struct Text<'a> {
-    tex: texture::CompressedSrgbTexture2d,
+    tex: texture::UnsignedTexture2d,
     vertex_buffer: glium::VertexBuffer<Vertex>,
     index_buffer: glium::IndexBuffer<u16>,
     program: glium::Program,
@@ -23,13 +23,23 @@ pub struct Text<'a> {
 
 impl<'a> Text<'a> {
     pub fn new(display: &glium::Display) -> Text {
-        let image = image::load(Cursor::new(&include_bytes!("c64-font.png")[..]), image::PNG)
-            .unwrap()
-            .to_rgba();
-        let dimensions = image.dimensions();
         let image =
-            glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), dimensions);
-        let tex = glium::texture::CompressedSrgbTexture2d::new(display, image).unwrap();
+            image::load_from_memory_with_format(&include_bytes!("c64-font.png")[..], image::PNG)
+                .unwrap()
+                .to_luma();
+        let (w, h) = image.dimensions();
+        let image = glium::texture::RawImage2d {
+            data: std::borrow::Cow::from(image.into_raw()),
+            width: w,
+            height: h,
+            format: glium::texture::ClientFormat::U8,
+        };
+        let tex = glium::texture::UnsignedTexture2d::with_format(
+            display,
+            image,
+            glium::texture::UncompressedUintFormat::U8,
+            glium::texture::MipmapsOption::NoMipmap,
+        ).unwrap();
 
         // building the vertex buffer, which contains all the vertices that we will draw
         let vertex_buffer = {
@@ -38,19 +48,19 @@ impl<'a> Text<'a> {
                 &[
                     Vertex {
                         position: [-1.0, -1.0],
-                        tex_coords: [0.0, 0.0],
-                    },
-                    Vertex {
-                        position: [-1.0, 1.0],
                         tex_coords: [0.0, 1.0],
                     },
                     Vertex {
+                        position: [-1.0, 1.0],
+                        tex_coords: [0.0, 0.0],
+                    },
+                    Vertex {
                         position: [1.0, 1.0],
-                        tex_coords: [1.0, 1.0],
+                        tex_coords: [1.0, 0.0],
                     },
                     Vertex {
                         position: [1.0, -1.0],
-                        tex_coords: [1.0, 0.0],
+                        tex_coords: [1.0, 1.0],
                     },
                 ],
             ).unwrap()
@@ -76,26 +86,29 @@ impl<'a> Text<'a> {
                 in vec2 tex_coords;
 
                 out vec2 v_tex_coords;
+                out ivec4 v_fgcolor;
 
                 void main() {
                     gl_Position = perspview * model * vec4(position, 0.0, 1.0);
 
                     // Characters are arranged in a 16x16 square.
-                    // Texture oordinates originate in the bottom-left corner.
                     int xpos = index % 16;
-                    int ypos = 15 - index / 16;
+                    int ypos = index / 16;
                     v_tex_coords = (tex_coords) / 16.0 + vec2(xpos / 16., ypos / 16.);
                 }
             ",
 
             fragment: "
                 #version 140
-                uniform sampler2D tex;
+                uniform usampler2D tex;
+                uniform vec4 bgcolor;
+                uniform vec4 fgcolor;
+
                 in vec2 v_tex_coords;
                 out vec4 f_color;
 
                 void main() {
-                    f_color = texture(tex, v_tex_coords);
+                    f_color = texture(tex, v_tex_coords).x == 0U ? bgcolor : fgcolor;
                 }
             "
         }).unwrap();
@@ -121,12 +134,16 @@ impl<'a> Text<'a> {
     }
 
     pub fn draw(&self, frame: &mut glium::Frame, perspview: &[[f32; 4]; 4]) {
-        let uniforms = uniform! {
+        let uniforms =
+            uniform! {
             model: array4x4(self.model),
             perspview: *perspview,
             tex: self.tex.sampled()
                 .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
-            index: 'A' as i32,
+            index: 'C' as i32,
+            // RGB values from http://unusedino.de/ec64/technical/misc/vic656x/colors/
+            bgcolor: [  53./255.,  40./255., 121./255.,   0.0/255. ] as [f32; 4],
+            fgcolor: [ 120./255., 106./255., 255./255., 188.0/255. ] as [f32; 4],
         };
         frame
             .draw(
