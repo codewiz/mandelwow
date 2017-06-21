@@ -13,7 +13,7 @@ struct Vertex {
 implement_vertex!(Vertex, position, tex_coords);
 
 pub struct Text<'a> {
-    tex: texture::UnsignedTexture2d,
+    tex: texture::Texture2d,
     vertex_buffer: glium::VertexBuffer<Vertex>,
     index_buffer: glium::IndexBuffer<u16>,
     program: glium::Program,
@@ -34,10 +34,10 @@ impl<'a> Text<'a> {
             height: h,
             format: glium::texture::ClientFormat::U8,
         };
-        let tex = glium::texture::UnsignedTexture2d::with_format(
+        let tex = glium::texture::Texture2d::with_format(
             display,
             image,
-            glium::texture::UncompressedUintFormat::U8,
+            glium::texture::UncompressedFloatFormat::U8,
             glium::texture::MipmapsOption::NoMipmap,
         ).unwrap();
 
@@ -94,13 +94,13 @@ impl<'a> Text<'a> {
                     // Characters are arranged in a 16x16 square.
                     int xpos = index % 16;
                     int ypos = index / 16;
-                    v_tex_coords = (tex_coords) / 16.0 + vec2(xpos / 16., ypos / 16.);
+                    v_tex_coords = (tex_coords + vec2(xpos, ypos)) / 16.;
                 }
             ",
 
             fragment: "
                 #version 140
-                uniform usampler2D tex;
+                uniform sampler2D tex;
                 uniform vec4 bgcolor;
                 uniform vec4 fgcolor;
 

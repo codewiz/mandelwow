@@ -72,6 +72,7 @@ fn main() {
         .with_srgb(Some(true))
         .with_title(format!("MandelWow"))
         .build_glium()
+        //.build_glium_debug(glium::debug::DebugCallbackBehavior::PrintAll)
         .unwrap();
 
     gl_info(&display);
