@@ -1,9 +1,25 @@
 use cgmath::conv::array4x4;
-use cgmath::{Matrix4, One};
+use cgmath::{Matrix4, Vector3};
 use glium;
 use glium::{Surface, texture};
 use image;
 use std;
+
+fn gamma<T>(x: T) -> f32
+where
+    f32: From<T>,
+    T: Copy,
+{
+    ((f32::from(x)) / 255.).powf(2.2)
+}
+
+fn srgb<T>(c: [T; 3]) -> [f32; 4]
+where
+    f32: From<T>,
+    T: Copy,
+{
+    [gamma(c[0]), gamma(c[1]), gamma(c[2]), 0.0]
+}
 
 #[derive(Copy, Clone)]
 struct Vertex {
@@ -124,7 +140,7 @@ impl<'a> Text<'a> {
         };
 
         Text {
-            model: Matrix4::one(),
+            model: Matrix4::from_translation(Vector3::unit_z() * (-1.0)),
             tex: tex,
             vertex_buffer: vertex_buffer,
             index_buffer: index_buffer,
@@ -142,8 +158,8 @@ impl<'a> Text<'a> {
                 .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
             index: 'C' as i32,
             // RGB values from http://unusedino.de/ec64/technical/misc/vic656x/colors/
-            bgcolor: [  53./255.,  40./255., 121./255.,   0.0/255. ] as [f32; 4],
-            fgcolor: [ 120./255., 106./255., 255./255., 188.0/255. ] as [f32; 4],
+            bgcolor: srgb([ 64,  50, 133u8]),  //  6 - blue
+            fgcolor: srgb([120, 106, 189u8]),  // 14 - light blue
         };
         frame
             .draw(
