@@ -64,9 +64,7 @@ pub fn start() -> SoundPlayer {
 
 pub fn hit_event(player: &mut SoundPlayer) -> f32 {
     use std::ops::Deref;
-    let maybe_audio_device = &mut player.device;
-    let audio_device = &mut maybe_audio_device.as_mut().unwrap();
-    let audio_device_lock = audio_device.lock();
+    let audio_device_lock = player.device.as_mut().unwrap().lock();
     let xm_callback = audio_device_lock.deref();
     let xm = &xm_callback.xm;
     let n_samples = xm.latest_trigger_of_instrument(0x1D);
