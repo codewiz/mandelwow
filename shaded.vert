@@ -3,7 +3,7 @@ precision lowp float;
 
 in vec3 position;
 in vec3 normal;
-out vec4 color;  // Shaded color
+flat out vec4 color;  // Shaded color
 
 uniform mat4 model;
 uniform mat4 perspview;
@@ -12,7 +12,7 @@ uniform vec3 col;
 void main() {
     mat4 m = perspview * model;
     vec3 dark = col * 0.1;
-    vec3 u_light = vec3(-0.5, -0.7, -0.6);
+    vec3 u_light = vec3( 0.5, -0.7, -0.6);
     vec3 v_normal = transpose(inverse(mat3(model))) * normal;
 
     float distance = model[3][2];

@@ -1,4 +1,3 @@
-use cube::Cube;
 use glium;
 use glium::{Display, Program, Surface};
 use glium::index::{IndexBuffer, PrimitiveType};
@@ -23,59 +22,35 @@ pub struct ShadedCube<'a> {
 }
 
 impl<'a> ShadedCube<'a> {
-    pub fn new(display: &Display, c: &Cube, program: &'a Program) -> ShadedCube<'a> {
+    pub fn new(display: &Display, program: &'a Program) -> ShadedCube<'a> {
         //      x--->
         //      4 ──────┐ 5
         //      ╱┆     ╱│
         //   0 ┌─────┐1 │
-        // y   │ 7+┄┄│┄┄+ 6
-        // |   │╱    │ ╱   /
-        // v   └─────┘    z
+        // y   │ 7+┄┄│┄┄+ 6    z
+        // |   │╱    │ ╱    ╱
+        // v   └─────┘
         //    3       2
         let vertex_data = [
-            // Front face
-            Vertex { position: [c.xmin, c.ymin, c.zmin], normal: [  0.,  0.,  1.] },  // 0
-            Vertex { position: [c.xmax, c.ymin, c.zmin], normal: [  0.,  0.,  1.] },  // 1
-            Vertex { position: [c.xmax, c.ymax, c.zmin], normal: [  0.,  0.,  1.] },  // 2
-            Vertex { position: [c.xmin, c.ymax, c.zmin], normal: [  0.,  0.,  1.] },  // 3
+            // Front
+            Vertex { position: [-0.5, -0.5,  0.5], normal: [  0.,  0., -1.] },  // 0
+            Vertex { position: [ 0.5, -0.5,  0.5], normal: [ -1.,  0.,  0.] },  // 1
+            Vertex { position: [ 0.5,  0.5,  0.5], normal: [  0., -1.,  0.] },  // 2
+            Vertex { position: [-0.5,  0.5,  0.5], normal: [  1.,  0.,  0.] },  // 3
 
-            // Back face
-            Vertex { position: [c.xmin, c.ymax, c.zmax], normal: [  0.,  0., -1.] },  // 7
-            Vertex { position: [c.xmax, c.ymax, c.zmax], normal: [  0.,  0., -1.] },  // 6
-            Vertex { position: [c.xmax, c.ymin, c.zmax], normal: [  0.,  0., -1.] },  // 5
-            Vertex { position: [c.xmin, c.ymin, c.zmax], normal: [  0.,  0., -1.] },  // 4
-
-            // Right face
-            Vertex { position: [c.xmax, c.ymin, c.zmin], normal: [ -1.,  0.,  0.] },  // 1
-            Vertex { position: [c.xmax, c.ymin, c.zmax], normal: [ -1.,  0.,  0.] },  // 5
-            Vertex { position: [c.xmax, c.ymax, c.zmax], normal: [ -1.,  0.,  0.] },  // 6
-            Vertex { position: [c.xmax, c.ymax, c.zmin], normal: [ -1.,  0.,  0.] },  // 2
-
-            // Left face
-            Vertex { position: [c.xmin, c.ymin, c.zmin], normal: [  1.,  0.,  0.] },  // 0
-            Vertex { position: [c.xmin, c.ymax, c.zmin], normal: [  1.,  0.,  0.] },  // 3
-            Vertex { position: [c.xmin, c.ymax, c.zmax], normal: [  1.,  0.,  0.] },  // 7
-            Vertex { position: [c.xmin, c.ymin, c.zmax], normal: [  1.,  0.,  0.] },  // 4
-
-            // Top face
-            Vertex { position: [c.xmin, c.ymin, c.zmin], normal: [  0.,  1.,  0.] },  // 0
-            Vertex { position: [c.xmin, c.ymin, c.zmax], normal: [  0.,  1.,  0.] },  // 4
-            Vertex { position: [c.xmax, c.ymin, c.zmax], normal: [  0.,  1.,  0.] },  // 5
-            Vertex { position: [c.xmax, c.ymin, c.zmin], normal: [  0.,  1.,  0.] },  // 1
-
-            // Bottom face
-            Vertex { position: [c.xmax, c.ymax, c.zmin], normal: [  0., -1.,  0.] },  // 2
-            Vertex { position: [c.xmax, c.ymax, c.zmax], normal: [  0., -1.,  0.] },  // 6
-            Vertex { position: [c.xmin, c.ymax, c.zmax], normal: [  0., -1.,  0.] },  // 7
-            Vertex { position: [c.xmin, c.ymax, c.zmin], normal: [  0., -1.,  0.] },  // 3
+            // Back
+            Vertex { position: [-0.5, -0.5, -0.5], normal: [  0.,  1.,  0.] },  // 4
+            Vertex { position: [ 0.5, -0.5, -0.5], normal: [  0.,  0.,  1.] },  // 5
+            Vertex { position: [ 0.5,  0.5, -0.5], normal: [  0.,  0.,  0.] },  // 6
+            Vertex { position: [-0.5,  0.5, -0.5], normal: [  0.,  0.,  0.] },  // 7
         ];
         const INDICES: &[u16] = &[
-             0,  1,  2,  0,  2,  3,  // Front
-             4,  5,  6,  4,  6,  7,  // Back
-             8,  9, 10,  8, 10, 11,  // Right
-            12, 13, 14, 12, 14, 15,  // Left
-            16, 17, 18, 16, 18, 19,  // Top
-            20, 21, 22, 20, 22, 23u16  // Bottom
+             1,  2,  0,  2,  3,  0,    // Front
+             5,  6,  1,  6,  2,  1,    // Right
+             6,  7,  2,  7,  3,  2,    // Top
+             4,  0,  3,  7,  4,  3,    // Left
+             5,  1,  4,  1,  0,  4,    // Top
+             7,  6,  5,  4,  7,  5u16  // Back
         ];
 
         ShadedCube {
@@ -93,7 +68,7 @@ impl<'a> ShadedCube<'a> {
                 write: true,
                 ..Default::default()
             },
-            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise,
+            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullClockwise,
             ..Default::default()
         };
         frame.draw(&self.vertexes, &self.indices, &self.program, uniforms, &params).unwrap();

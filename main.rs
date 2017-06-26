@@ -98,7 +98,7 @@ fn main() {
         zmax:  1.1,
     };
     let mandelwow_bbox = bounding_box::BoundingBox::new(&display, &bounds, &bounding_box_program);
-    let shaded_cube = ShadedCube::new(&display, &Cube::default(), &shaded_program);
+    let shaded_cube = ShadedCube::new(&display, &shaded_program);
 
     const SEA_XSIZE: usize = 24;
     const SEA_ZSIZE: usize = 20;
@@ -226,8 +226,8 @@ fn main() {
                             .with_depth_buffer(24)
                             .rebuild_glium(&display).unwrap();
                     } else {
-                        //glutin::WindowBuilder::new()
-                        //    .rebuild_glium(&display).unwrap();
+                        glutin::WindowBuilder::new()
+                            .rebuild_glium(&display).unwrap();
                     }
                 },
                 ev => camera.process_input(&ev),
