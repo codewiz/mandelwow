@@ -5,7 +5,7 @@ use glium::index::{IndexBuffer, PrimitiveType};
 pub fn shaded_program(display: &Display) -> Program {
     let vertex_shader_src = include_str!("shaded.vert");
     let fragment_shader_src = include_str!("shaded.frag");
-    return Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap();
+    Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap()
 }
 
 #[derive(Copy, Clone)]
@@ -71,6 +71,6 @@ impl<'a> ShadedCube<'a> {
             backface_culling: glium::draw_parameters::BackfaceCullingMode::CullClockwise,
             ..Default::default()
         };
-        frame.draw(&self.vertexes, &self.indices, &self.program, uniforms, &params).unwrap();
+        frame.draw(&self.vertexes, &self.indices, self.program, uniforms, &params).unwrap();
     }
 }

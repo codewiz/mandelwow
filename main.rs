@@ -70,7 +70,7 @@ fn main() {
         .with_depth_buffer(24)
         .with_vsync()
         .with_srgb(Some(true))
-        .with_title(format!("MandelWow"))
+        .with_title("MandelWow")
         .build_glium()
         //.build_glium_debug(glium::debug::DebugCallbackBehavior::PrintAll)
         .unwrap();
@@ -131,7 +131,7 @@ fn main() {
     let mut hit_time = 0.0f32;
     set_main_loop_callback(|| {
         let new_hit = sound::hit_event(&mut soundplayer);
-        if new_hit != last_hit {
+        if new_hit > last_hit {
             hit_time = t;
         }
         last_hit = new_hit;
@@ -176,8 +176,8 @@ fn main() {
 
         for x in 0..SEA_XSIZE {
             for z in 0..SEA_ZSIZE {
-                let wave = (((x as f32 / SEA_XSIZE as f32 * PI * 5.0 + t * 2.0)).sin() +
-                            ((z as f32 / SEA_ZSIZE as f32 * PI * 3.0 + t * 3.0)).sin()) * 0.3;
+                let wave = ((x as f32 / SEA_XSIZE as f32 * PI * 5.0 + t * 2.0).sin() +
+                            (z as f32 / SEA_ZSIZE as f32 * PI * 3.0 + t * 3.0).sin()) * 0.3;
                 let model = Matrix4::from_translation(sea[x][z] + Vector3 {x: 0., y: wave, z: 0.});
                 let uniforms = uniform! {
                     model: array4x4(model),

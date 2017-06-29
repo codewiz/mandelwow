@@ -6,7 +6,7 @@ use glium::index::{IndexBuffer, PrimitiveType};
 pub fn solid_fill_program(display: &Display) -> Program {
     let vertex_shader_src = include_str!("solid.vert");
     let fragment_shader_src = include_str!("solid.frag");
-    return Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap();
+    Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap()
 }
 
 #[derive(Copy, Clone)]
@@ -54,6 +54,6 @@ impl<'a> BoundingBox<'a> {
             blend: glium::Blend::alpha_blending(),
             ..Default::default()
         };
-        frame.draw(&self.vertexes, &self.indices, &self.program, uniforms, &params).unwrap();
+        frame.draw(&self.vertexes, &self.indices, self.program, uniforms, &params).unwrap();
     }
 }

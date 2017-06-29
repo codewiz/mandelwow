@@ -33,7 +33,7 @@ fn play_xm(raw_xm: &[u8]) -> SoundPlayer {
         samples: Some(4096),  // 85ms
     };
     let device = sdl_audio.open_playback(None, &desired_spec, |actual_spec| {
-        let xm = XMContext::new(&raw_xm, actual_spec.freq as u32).unwrap();
+        let xm = XMContext::new(raw_xm, actual_spec.freq as u32).unwrap();
 
         XmCallback {
             xm: xm,
@@ -59,7 +59,7 @@ pub fn start() -> SoundPlayer {
             println!("Couldn't open module {}: {:?}", filename, err);
         },
     }
-    return SoundPlayer { device: None };
+    SoundPlayer { device: None }
 }
 
 pub fn hit_event(player: &mut SoundPlayer) -> f32 {
@@ -68,5 +68,5 @@ pub fn hit_event(player: &mut SoundPlayer) -> f32 {
     let xm_callback = audio_device_lock.deref();
     let xm = &xm_callback.xm;
     let n_samples = xm.latest_trigger_of_instrument(0x1D);
-    return n_samples as f32 / SAMPLE_RATE as f32;
+    n_samples as f32 / SAMPLE_RATE as f32
 }

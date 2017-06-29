@@ -29,11 +29,11 @@ fn mand(cx: f32, cy: f32) -> [f32; 3] {
 */
 
 pub fn program(display: &glium::Display) -> glium::Program {
-    return program!(display,
+    program!(display,
         100 => {
             vertex: include_str!("mandelwow.vert"),
             fragment: include_str!("mandelwow.frag"),
-        }).unwrap();
+        }).unwrap()
 }
 
 fn mandel<U>(display: &glium::Display,
@@ -129,6 +129,6 @@ pub fn draw(display: &glium::Display,
             perspective: camera.get_perspective(),
         };
 
-        mandel(&display, &mut frame, &program, &uniforms, bounds, z0);
+        mandel(display, &mut frame, program, &uniforms, bounds, z0);
     }
 }
