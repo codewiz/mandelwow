@@ -5,8 +5,9 @@ authors = ["Bernie Innocenti <bernie@codewiz.org>"]
 license = "GPL-3.0+"
 
 [profile.release]
-#lto = true
-panic = 'abort'
+lto = true
+panic = "abort"
+opt-level = 3
 
 [dependencies]
 cgmath = "*"
