@@ -2,7 +2,6 @@ use cgmath::conv::array4x4;
 use cgmath::{Matrix4, Vector3};
 use glium;
 use glium::{Surface, texture};
-use image;
 use std;
 
 fn gamma<T>(x: T) -> f32
@@ -19,6 +18,23 @@ where
     T: Copy,
 {
     [gamma(c[0]), gamma(c[1]), gamma(c[2]), 0.0]
+}
+
+#[cfg(feature = "image")]
+fn c64_font() -> (u32, u32, Vec<u8>) {
+    use image;
+    let image =
+        image::load_from_memory_with_format(&include_bytes!("c64-font.png")[..], image::PNG)
+            .unwrap()
+            .to_luma();
+    let (w, h) = image.dimensions();
+    (w, h, image.into_raw())
+}
+
+#[cfg(not(feature = "image"))]
+fn c64_font() -> (u32, u32, Vec<u8>) {
+    let pixels = &include_bytes!("c64-font.gray")[..];
+    (128, 128, Vec::from(pixels))
 }
 
 #[derive(Copy, Clone)]
@@ -39,13 +55,9 @@ pub struct Text<'a> {
 
 impl<'a> Text<'a> {
     pub fn new(display: &glium::Display) -> Text {
-        let image =
-            image::load_from_memory_with_format(&include_bytes!("c64-font.png")[..], image::PNG)
-                .unwrap()
-                .to_luma();
-        let (w, h) = image.dimensions();
+        let (w, h, pixels) = c64_font();
         let image = glium::texture::RawImage2d {
-            data: std::borrow::Cow::from(image.into_raw()),
+            data: std::borrow::Cow::from(pixels),
             width: w,
             height: h,
             format: glium::texture::ClientFormat::U8,

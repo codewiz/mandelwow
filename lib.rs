@@ -31,5 +31,5 @@ pub fn screenshot(display : &glium::Display) {
 }
 
 #[cfg(not(feature = "image"))]
-pub fn screenshot(display : &glium::Display) {
+pub fn screenshot(_ : &glium::Display) {
 }
