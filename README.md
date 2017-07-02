@@ -58,7 +58,7 @@ I followed these steps to build a native Windows binary:
 
 ### WebAssembly / asm.js
 
-Install emsdk 1.36.14:
+Install emsdk:
 
 ```
 cd ~

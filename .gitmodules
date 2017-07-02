@@ -1,0 +1,3 @@
+[submodule "rust-rocket"]
+	path = rust-rocket
+	url = https://github.com/Darksecond/rust-rocket
