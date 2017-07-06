@@ -1,5 +1,16 @@
 use std::time::{Duration, Instant};
 
+#[cfg(feature = "editor")]
+use rust_rocket;
+
+#[cfg(feature = "editor")]
+type Rocket = rust_rocket::Rocket;
+
+#[cfg(not(feature = "editor"))]
+type Rocket = ();
+
+const BPS: f32 = 10.0;
+
 #[derive(Debug)]
 pub struct Timer {
     pub t: f32,
@@ -13,6 +24,8 @@ pub struct Timer {
     accum_idle_time: Duration,
 
     pub pause: bool,
+
+    pub rocket: Option<Rocket>,
 }
 
 impl Timer {
@@ -26,11 +39,13 @@ impl Timer {
             accum_draw_time: Duration::default(),
             accum_idle_time: Duration::default(),
             pause: false,
+            rocket: Timer::init_rocket(),
         }
     }
 
     pub fn update(&mut self) {
         let now = Instant::now();
+        self.poll_rocket();
         if !self.pause {
             // Increment time
             self.t += 0.01;
@@ -63,5 +78,40 @@ impl Timer {
         let avg_draw_time = millis(self.accum_draw_time / frames_done);
         let avg_idle_time = millis(self.accum_idle_time / frames_done);
         println!("fps={:.1} draw={:.1}ms idle={:.1}ms", fps, avg_draw_time, avg_idle_time);
+    }
+
+    #[cfg(not(feature = "editor"))]
+    fn init_rocket() -> Option<Rocket> { None }
+
+    #[cfg(not(feature = "editor"))]
+    fn poll_rocket(&mut self) {}
+
+    #[cfg(feature = "editor")]
+    fn init_rocket() -> Option<Rocket> {
+        Rocket::new().ok()
+    }
+
+    #[cfg(feature = "editor")]
+    fn poll_rocket(&mut self) {
+        match self.rocket {
+            Some(ref mut rocket) => {
+                let current_row = (self.t * BPS) as u32;
+                if let Some(event) = rocket.poll_events() {
+                    match event {
+                        rust_rocket::Event::SetRow(row) => {
+                            println!("SetRow (row: {:?})", row);
+                            self.t = row as f32 / BPS;
+                        }
+                        rust_rocket::Event::Pause(_) => {
+                            let track1 = rocket.get_track_mut("test");
+                            println!("Pause (value: {:?}) (row: {:?})", track1.get_value(current_row as f32), current_row);
+                        }
+                        _ => (),
+                    }
+                    println!("{:?}", event);
+                }
+            }
+            None => ()
+        }
     }
 }

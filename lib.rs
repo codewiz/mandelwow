@@ -5,7 +5,7 @@ extern crate glutin;
 #[cfg(feature = "image")]
 extern crate image;
 extern crate libxm;
-#[cfg(feature = "rust_rocket")]
+#[cfg(feature = "editor")]
 extern crate rust_rocket;
 extern crate sdl2;
 

@@ -5,9 +5,6 @@ extern crate cgmath;
 extern crate glium;
 extern crate glutin;
 
-#[cfg(feature = "rust-rocket")]
-extern crate rust_rocket;
-
 use cgmath::{Euler, Matrix4, Rad, SquareMatrix, Vector3, Vector4, Zero};
 use cgmath::conv::array4x4;
 use glium::{DisplayBuild, Surface};
@@ -67,12 +64,6 @@ pub fn set_main_loop_callback<F>(callback : F) where F : FnMut() -> support::Act
 
 fn main() {
     let mut soundplayer = sound::start();
-
-    let mut rocket = rust_rocket::Rocket::new().unwrap();
-    rocket.get_track_mut("test");
-    rocket.get_track_mut("test2");
-    rocket.get_track_mut("a:test2");
-    let mut current_row = 0;
 
     let display = glutin::WindowBuilder::new()
         .with_dimensions(1280, 720)
@@ -234,21 +225,6 @@ fn main() {
                 },
                 ev => camera.process_input(&ev),
             }
-        }
-
-        if let Some(event) = rocket.poll_events() {
-            match event {
-                rust_rocket::Event::SetRow(row) => {
-                    println!("SetRow (row: {:?})", row);
-                    current_row = row;
-                }
-                rust_rocket::Event::Pause(_) => {
-                    let track1 = rocket.get_track("test").unwrap();
-                    println!("Pause (value: {:?}) (row: {:?})", track1.get_value(current_row as f32), current_row);
-                }
-                _ => (),
-            }
-            println!("{:?}", event);
         }
 
         timer.update();
