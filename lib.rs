@@ -16,6 +16,7 @@ pub mod shaded_cube;
 pub mod sound;
 pub mod support;
 pub mod text;
+pub mod timer;
 
 pub use bounding_box::BoundingBox;
 pub use cube::Cube;
