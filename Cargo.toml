@@ -22,14 +22,14 @@ rand = "*"
 sdl2 = "*"
 
 [features]
-default = ["image", "editor", "logging"]
+default = ["image", "logging"]
 min = []
 logging = []
 editor = ["rust-rocket"]
 
-[replace]
-"glutin:0.7.4" = { path = "/home/bernie/src/glutin" }
-"glium:0.16.0" = { path = "/home/bernie/src/glium" }
+#[replace]
+#"glutin:0.7.4" = { path = "/home/bernie/src/glutin" }
+#"glium:0.16.0" = { path = "/home/bernie/src/glium" }
 
 [target.armv7-linux-androideabi]
 ar = "$ANDROID_NDK_HOME/arm/bin/arm-linux-androideabi-ar"

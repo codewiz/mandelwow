@@ -11,10 +11,12 @@ I wrote this demo to learn Rust & basic GLSL. Mind the mess.
 ## Requirements
 
 The native binary requires OpenGL 3.1. Should perform well on reasonably modern
-hardware. Tested on Linux with Intel HD Graphics 4000 (Ivy Bridge) and NVidia GTX 970.
+hardware. Tested on:
 
-The asmjs and WebAssembly versions were tested on Chromium 57 and Firefox 53.
-
+ * Linux with NVidia GTX 970 (Mesa 17.1 Nouveau driver)
+ * Linux with Intel HD Graphics 4000 (Ivy Bridge)
+ * Windows 10 with NVidia GTX 970
+ * The asmjs and WebAssembly build works on Chromium 57 and Firefox 53
 
 ## Building from source
 
@@ -23,6 +25,9 @@ The asmjs and WebAssembly versions were tested on Chromium 57 and Firefox 53.
 Install cargo (either your distro's packaged version or via rustup), then go to the source root and type:
 
 ```
+cd mandelwow
+git submodule init
+git submodule update
 cargo run --release
 ```
 
