@@ -6,7 +6,7 @@ license = "GPL-3.0+"
 
 [profile.release]
 lto = true
-panic = "abort"
+panic = "unwind"
 opt-level = 3
 
 [dependencies]
