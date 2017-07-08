@@ -6,6 +6,7 @@ license = "GPL-3.0+"
 
 [profile.release]
 lto = true
+# the crate `bitflags` is compiled with the panic strategy `abort` which is incompatible with this crate's strategy of `unwind`
 panic = "unwind"
 opt-level = 3
 
