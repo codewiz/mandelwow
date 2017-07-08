@@ -1,7 +1,7 @@
 use cgmath::conv::array4x4;
 use cgmath::{Matrix4, Vector3};
 use glium;
-use glium::{Surface, texture};
+use glium::{Display, Program, Surface, texture};
 use std;
 
 fn gamma<T>(x: T) -> f32
@@ -23,18 +23,26 @@ where
 #[cfg(feature = "image")]
 fn c64_font() -> (u32, u32, Vec<u8>) {
     use image;
-    let image =
-        image::load_from_memory_with_format(&include_bytes!("c64-font.png")[..], image::PNG)
-            .unwrap()
-            .to_luma();
+    let image = image::load_from_memory_with_format(
+        &include_bytes!("textures/c64-font.png")[..],
+        image::PNG,
+    ).unwrap()
+        .to_luma();
     let (w, h) = image.dimensions();
     (w, h, image.into_raw())
 }
 
 #[cfg(not(feature = "image"))]
 fn c64_font() -> (u32, u32, Vec<u8>) {
-    let pixels = &include_bytes!("c64-font.gray")[..];
+    let pixels = &include_bytes!("textures/c64-font.gray")[..];
     (128, 128, Vec::from(pixels))
+}
+
+pub fn text_program(display: &Display) -> Program {
+    //load_program(display, "shaders/text.vert", "shaders/text.frag");
+    let vertex_shader_src = include_str!("shaders/text.vert");
+    let fragment_shader_src = include_str!("shaders/text.frag");
+    Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap()
 }
 
 #[derive(Copy, Clone)]
@@ -54,7 +62,7 @@ pub struct Text<'a> {
 }
 
 impl<'a> Text<'a> {
-    pub fn new(display: &glium::Display) -> Text {
+    pub fn new(display: &Display) -> Text {
         let (w, h, pixels) = c64_font();
         let image = glium::texture::RawImage2d {
             data: std::borrow::Cow::from(pixels),
@@ -100,47 +108,6 @@ impl<'a> Text<'a> {
             &[1 as u16, 2, 0, 3],
         ).unwrap();
 
-        // compiling shaders and linking them together
-        let program = program!(display,
-        140 => {
-            vertex: "
-                #version 140
-
-                uniform mat4 model;
-                uniform mat4 perspview;
-                uniform int index;
-
-                in vec2 position;
-                in vec2 tex_coords;
-
-                out vec2 v_tex_coords;
-                out ivec4 v_fgcolor;
-
-                void main() {
-                    gl_Position = perspview * model * vec4(position, 0.0, 1.0);
-
-                    // Characters are arranged in a 16x16 square.
-                    int xpos = index % 16;
-                    int ypos = index / 16;
-                    v_tex_coords = (tex_coords + vec2(xpos, ypos)) / 16.;
-                }
-            ",
-
-            fragment: "
-                #version 140
-                uniform sampler2D tex;
-                uniform vec4 bgcolor;
-                uniform vec4 fgcolor;
-
-                in vec2 v_tex_coords;
-                out vec4 f_color;
-
-                void main() {
-                    f_color = texture(tex, v_tex_coords).x == 0U ? bgcolor : fgcolor;
-                }
-            "
-        }).unwrap();
-
         let params = glium::DrawParameters {
             depth: glium::Depth {
                 test: glium::draw_parameters::DepthTest::IfLess,
@@ -156,7 +123,7 @@ impl<'a> Text<'a> {
             tex: tex,
             vertex_buffer: vertex_buffer,
             index_buffer: index_buffer,
-            program: program,
+            program: text_program(display),
             params: params,
         }
     }
