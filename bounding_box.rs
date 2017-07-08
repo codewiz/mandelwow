@@ -4,8 +4,8 @@ use glium::{Display, Program, Surface};
 use glium::index::{IndexBuffer, PrimitiveType};
 
 pub fn solid_fill_program(display: &Display) -> Program {
-    let vertex_shader_src = include_str!("solid.vert");
-    let fragment_shader_src = include_str!("solid.frag");
+    let vertex_shader_src = include_str!("shaders/solid.vert");
+    let fragment_shader_src = include_str!("shaders/solid.frag");
     Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap()
 }
 

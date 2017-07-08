@@ -1,5 +1,5 @@
 extern crate cgmath;
-#[macro_use(uniform,program,implement_vertex)]
+#[macro_use(uniform,implement_vertex)]
 extern crate glium;
 extern crate glutin;
 #[cfg(feature = "image")]

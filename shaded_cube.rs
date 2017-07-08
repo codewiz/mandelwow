@@ -3,8 +3,8 @@ use glium::{Display, Program, Surface};
 use glium::index::{IndexBuffer, PrimitiveType};
 
 pub fn shaded_program(display: &Display) -> Program {
-    let vertex_shader_src = include_str!("shaded.vert");
-    let fragment_shader_src = include_str!("shaded.frag");
+    let vertex_shader_src = include_str!("shaders/shaded.vert");
+    let fragment_shader_src = include_str!("shaders/shaded.frag");
     Program::from_source(display, vertex_shader_src, fragment_shader_src, None).unwrap()
 }
 

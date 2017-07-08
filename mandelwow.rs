@@ -29,11 +29,11 @@ fn mand(cx: f32, cy: f32) -> [f32; 3] {
 */
 
 pub fn program(display: &glium::Display) -> glium::Program {
-    program!(display,
-        100 => {
-            vertex: include_str!("mandelwow.vert"),
-            fragment: include_str!("mandelwow.frag"),
-        }).unwrap()
+    Program::from_source(
+            display,
+            include_str!("shaders/mandelwow.vert"),
+            include_str!("shaders/mandelwow.frag"), None)
+        .unwrap()
 }
 
 fn mandel<U>(display: &glium::Display,
