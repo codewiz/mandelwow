@@ -58,11 +58,12 @@ pub struct Text<'a> {
     index_buffer: glium::IndexBuffer<u16>,
     program: glium::Program,
     params: glium::DrawParameters<'a>,
-    model: Matrix4<f32>,
+    pub model: Matrix4<f32>,
+    pub character: char,
 }
 
 impl<'a> Text<'a> {
-    pub fn new(display: &Display) -> Text {
+    pub fn new(display: &Display, character: char) -> Text {
         let (w, h, pixels) = c64_font();
         let image = glium::texture::RawImage2d {
             data: std::borrow::Cow::from(pixels),
@@ -83,19 +84,19 @@ impl<'a> Text<'a> {
                 display,
                 &[
                     Vertex {
-                        position: [-1.0, -1.0],
+                        position: [-0.5, -0.5],
                         tex_coords: [0.0, 1.0],
                     },
                     Vertex {
-                        position: [-1.0, 1.0],
+                        position: [-0.5, 0.5],
                         tex_coords: [0.0, 0.0],
                     },
                     Vertex {
-                        position: [1.0, 1.0],
+                        position: [0.5, 0.5],
                         tex_coords: [1.0, 0.0],
                     },
                     Vertex {
-                        position: [1.0, -1.0],
+                        position: [0.5, -0.5],
                         tex_coords: [1.0, 1.0],
                     },
                 ],
@@ -119,12 +120,13 @@ impl<'a> Text<'a> {
         };
 
         Text {
-            model: Matrix4::from_translation(Vector3::unit_z() * (-1.0)),
             tex: tex,
             vertex_buffer: vertex_buffer,
             index_buffer: index_buffer,
             program: text_program(display),
             params: params,
+            model: Matrix4::from_translation(Vector3::unit_z() * (-1.0)),
+            character: character,
         }
     }
 
@@ -135,7 +137,7 @@ impl<'a> Text<'a> {
             perspview: *perspview,
             tex: self.tex.sampled()
                 .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
-            index: 'C' as i32,
+            index: self.character as i32,
             // RGB values from http://unusedino.de/ec64/technical/misc/vic656x/colors/
             bgcolor: srgb([ 64,  50, 133u8]),  //  6 - blue
             fgcolor: srgb([120, 106, 189u8]),  // 14 - light blue

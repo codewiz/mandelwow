@@ -3,9 +3,8 @@
 use cube::Cube;
 use glium;
 use glium::index::PrimitiveType;
-use glium::Surface;
+use glium::{Display, Program, Surface};
 use support;
-
 
 /*
 fn mand(cx: f32, cy: f32) -> [f32; 3] {
@@ -28,7 +27,7 @@ fn mand(cx: f32, cy: f32) -> [f32; 3] {
 }
 */
 
-pub fn program(display: &glium::Display) -> glium::Program {
+pub fn program(display: &Display) -> Program {
     Program::from_source(
             display,
             include_str!("shaders/mandelwow.vert"),
@@ -36,9 +35,9 @@ pub fn program(display: &glium::Display) -> glium::Program {
         .unwrap()
 }
 
-fn mandel<U>(display: &glium::Display,
+fn mandel<U>(display: &Display,
           frame: &mut glium::Frame,
-          program: &glium::Program,
+          program: &Program,
           uniforms: &U,
           bounds: &Cube,
           z: [f32; 2]) where U: glium::uniforms::Uniforms {
@@ -104,9 +103,9 @@ fn mandel<U>(display: &glium::Display,
     frame.draw(&vb, &indices, program, uniforms, &params).unwrap();
 }
 
-pub fn draw(display: &glium::Display,
+pub fn draw(display: &Display,
              mut frame: &mut glium::Frame,
-             program: &glium::Program,
+             program: &Program,
              model: [[f32; 4]; 4],
              camera: &support::camera::CameraState,
              bounds: &Cube,

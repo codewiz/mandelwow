@@ -79,7 +79,7 @@ fn main() {
 
     gl_info(&display);
 
-    let text = text::Text::new(&display);
+    let mut text = text::Text::new(&display, 'A');
     let mandelwow_program = mandelwow::program(&display);
     let bounding_box_program = bounding_box::solid_fill_program(&display);
     let shaded_program = shaded_cube::shaded_program(&display);
@@ -101,15 +101,16 @@ fn main() {
     let mandelwow_bbox = bounding_box::BoundingBox::new(&display, &bounds, &bounding_box_program);
     let shaded_cube = ShadedCube::new(&display, &shaded_program);
 
-    const SEA_XSIZE: usize = 24;
-    const SEA_ZSIZE: usize = 20;
-    let sea_xmin = -14.0f32;
-    let sea_xmax =  14.0f32;
+    const SEA_XSIZE: usize = 40;
+    const SEA_ZSIZE: usize = 25;
+    let sea_xmin = -20.0f32;
+    let sea_xmax =  20.0f32;
     let sea_y = -2.5;
     let sea_zmin =  -2.0f32;
-    let sea_zmax = -26.0f32;
+    let sea_zmax = -27.0f32;
     let sea_xstep = (sea_xmax - sea_xmin) / (SEA_XSIZE as f32);
     let sea_zstep = (sea_zmax - sea_zmin) / (SEA_ZSIZE as f32);
+    println!("xstep={} ystep={:?}", sea_xstep, sea_zstep);
 
     let mut sea = [[Vector3::zero(); SEA_ZSIZE]; SEA_XSIZE];
     for x in 0..SEA_XSIZE {
@@ -168,23 +169,27 @@ fn main() {
             mandelwow_bbox.draw(&mut frame, &uniforms);
         }
 
+        let text_rot = Matrix4::from_angle_x(cgmath::Deg(-90.0f32));
+        let text_pos = Matrix4::from_translation(Vector3 { x: 0.0, y: 0.501, z: 0.0f32}) * text_rot;
         for x in 0..SEA_XSIZE {
             for z in 0..SEA_ZSIZE {
                 let wave = ((x as f32 / SEA_XSIZE as f32 * PI * 5.0 + t * 2.0).sin() +
                             (z as f32 / SEA_ZSIZE as f32 * PI * 3.0 + t * 3.0).sin()) * 0.3;
-                let model = Matrix4::from_translation(sea[x][z] + Vector3 {x: 0., y: wave, z: 0.});
+                let model = Matrix4::from_translation(
+                    sea[x][z] + Vector3 {x: 0., y: wave, z: 0.});
                 let uniforms = uniform! {
                     model: array4x4(model),
                     perspview: perspview,
                     col: [0., (1. - wave).abs() * 0.5,  wave.abs()],
                 };
                 shaded_cube.draw(&mut frame, &uniforms);
+                text.model = model * text_pos;
+                text.character = (x + z * SEA_XSIZE) as u8 as char;
+                text.draw(&mut frame, &perspview);
             }
         }
 
         mandelwow::draw(&display, &mut frame, &mandelwow_program, model, &camera, &bounds, wow);
-
-        text.draw(&mut frame, &perspview);
 
         frame.finish().unwrap();
 
