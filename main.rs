@@ -7,9 +7,9 @@ extern crate glutin;
 
 use cgmath::{Euler, Matrix4, Rad, SquareMatrix, Vector3, Vector4, Zero};
 use cgmath::conv::array4x4;
-use glium::{DisplayBuild, Surface};
+use glium::{Surface};
 use glutin::ElementState::Pressed;
-use glutin::Event::KeyboardInput;
+use glutin::WindowEvent::KeyboardInput;
 use glutin::VirtualKeyCode;
 use mandelwow_lib::*;
 use std::f32::consts::PI;
@@ -65,18 +65,17 @@ pub fn set_main_loop_callback<F>(callback : F) where F : FnMut() -> support::Act
 fn main() {
     let mut soundplayer = sound::start();
 
-    let display = glutin::WindowBuilder::new()
+    let mut events_loop = glutin::EventsLoop::new();
+    let window = glutin::WindowBuilder::new()
         .with_dimensions(1280, 720)
-        .with_gl_profile(glutin::GlProfile::Core)
         //.with_fullscreen(glutin::get_primary_monitor())
+        .with_title("MandelWow");
+    let context = glutin::ContextBuilder::new()
+        .with_gl_profile(glutin::GlProfile::Core)
         .with_depth_buffer(24)
-        .with_vsync()
-        .with_srgb(Some(true))
-        .with_title("MandelWow")
-        .build_glium()
-        //.build_glium_debug(glium::debug::DebugCallbackBehavior::PrintAll)
-        .unwrap();
-
+        .with_vsync(true)
+        .with_srgb(true);
+    let display = glium::Display::new(window, context, &events_loop).unwrap();
     gl_info(&display);
 
     let mut text = text::Text::new(&display, 'A');
@@ -193,47 +192,67 @@ fn main() {
 
         frame.finish().unwrap();
 
-        for ev in display.poll_events() {
-            match ev {
-                glutin::Event::Closed |
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::Escape)) |
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::Q)) => {
-                    return support::Action::Stop
-                },
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::B)) => {
-                    bounding_box_enabled ^= true;
-                },
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::P)) => {
-                    timer.pause ^= true;
-                },
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::PageUp)) => {
-                    timer.t += 0.01;
-                },
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::PageDown)) => {
-                    timer.t -= 0.01;
-                },
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::F10)) => {
-                    screenshot(&display);
-                },
-                KeyboardInput(Pressed, _, Some(VirtualKeyCode::F11)) => {
-                    fullscreen ^= true;
-                    if fullscreen {
-                        // Not implemented on Linux
-                        glutin::WindowBuilder::new()
-                            .with_fullscreen(glutin::get_primary_monitor())
-                            .with_depth_buffer(24)
-                            .rebuild_glium(&display).unwrap();
-                    } else {
-                        glutin::WindowBuilder::new()
-                            .rebuild_glium(&display).unwrap();
-                    }
-                },
-                ev => camera.process_input(&ev),
+        let mut action = support::Action::Continue;
+        events_loop.poll_events(|event| {
+            if let glutin::Event::WindowEvent { event, .. } = event {
+                camera.process_input(&event);
+                match event {
+                    glutin::WindowEvent::Closed => {
+                        action = support::Action::Stop
+                    },
+                    KeyboardInput { input, .. } => {
+                        if input.state == glutin::ElementState::Pressed {
+                            if let Some(key) = input.virtual_keycode {
+                                match key {
+                                    VirtualKeyCode::Escape | VirtualKeyCode::Q => {
+                                        action = support::Action::Stop;
+                                    },
+                                    _ => (),
+                                }
+                            }
+                        }
+                    },
+/*
+                    KeyboardInput { input: glutin::KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::Escape), .. } } |
+                    KeyboardInput { input: glutin::KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::Q), .. } } => {
+                        return support::Action::Stop
+                    },
+                    KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::B) } => {
+                        bounding_box_enabled ^= true;
+                    },
+                    KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::P) } => {
+                        timer.pause ^= true;
+                    },
+                    KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::PageUp) } => {
+                        timer.t += 0.01;
+                    },
+                    KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::PageDown) } => {
+                        timer.t -= 0.01;
+                    },
+                    KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::F10) } => {
+                        screenshot(&display);
+                    },
+                    KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::F11) } => {
+                        fullscreen ^= true;
+                        if fullscreen {
+                            // Not implemented on Linux
+                            glutin::WindowBuilder::new()
+                                .with_fullscreen(glutin::get_primary_monitor())
+                                .with_depth_buffer(24)
+                                .rebuild_glium(&display).unwrap();
+                        } else {
+                            glutin::WindowBuilder::new()
+                                .rebuild_glium(&display).unwrap();
+                        }
+                    },
+*/
+                    _ => (),
+                }
             }
-        }
+        });
 
         timer.update();
 
-        support::Action::Continue
+        action
     });
 }

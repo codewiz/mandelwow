@@ -2,17 +2,12 @@ extern crate glutin;
 
 use cgmath::{Matrix4, Vector4};
 use cgmath::conv::array4x4;
-use glutin::ElementState::{Pressed, Released};
-use glutin::Event::{KeyboardInput, MouseMoved};
+use glutin::WindowEvent::{KeyboardInput, MouseMoved};
 use glutin::VirtualKeyCode;
+use std::f32;
 use std::f32::consts::PI;
 use support::vec3::Vec3;
 use support::vec3::norm;
-
-use std::f32;
-
-//use glutin::Event;
-//use VirtualKeyCode;
 
 #[derive(Default)]
 pub struct CameraState {
@@ -170,9 +165,10 @@ impl CameraState {
         //println!("camera_dir = {:?}", self.dir);
     }
 
-    pub fn process_input(&mut self, event: &glutin::Event) {
+    pub fn process_input(&mut self, event: &glutin::WindowEvent) {
         match event {
-            &MouseMoved(x, y) => {
+            &MouseMoved { position: (x, y), .. }  => {
+                let (x, y) = (x as i32, y as i32);
                 if self.mouse_x == -1 {
                     // Set initial absolute position.
                     self.mouse_x = x;
@@ -183,67 +179,27 @@ impl CameraState {
                 self.mouse_x = x;
                 self.mouse_y = y;
             }
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::Up)) => {
-                self.moving_up = true;
+            &KeyboardInput { input, .. } => {
+                let pressed = input.state == glutin::ElementState::Pressed;
+                let key = match input.virtual_keycode {
+                    Some(key) => key,
+                    None => return,
+                };
+                match key {
+                    VirtualKeyCode::Left => self.moving_left = pressed,
+                    VirtualKeyCode::Right => self.moving_right = pressed,
+                    VirtualKeyCode::Up => self.moving_up = pressed,
+                    VirtualKeyCode::Down => self.moving_down = pressed,
+                    VirtualKeyCode::W => self.moving_forward = pressed,
+                    VirtualKeyCode::S => self.moving_backward = pressed,
+                    VirtualKeyCode::A => self.turning_left = pressed,
+                    VirtualKeyCode::D => self.turning_right = pressed,
+                    VirtualKeyCode::R => self.turning_up = pressed,
+                    VirtualKeyCode::F => self.turning_down = pressed,
+                    _ => (),
+                }
             },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::Up)) => {
-                self.moving_up = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::Down)) => {
-                self.moving_down = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::Down)) => {
-                self.moving_down = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::Left)) => {
-                self.moving_left = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::Left)) => {
-                self.moving_left = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::Right)) => {
-                self.moving_right = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::Right)) => {
-                self.moving_right = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::A)) => {
-                self.turning_left = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::A)) => {
-                self.turning_left = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::D)) => {
-                self.turning_right = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::D)) => {
-                self.turning_right = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::W)) => {
-                self.moving_forward = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::W)) => {
-                self.moving_forward = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::S)) => {
-                self.moving_backward = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::S)) => {
-                self.moving_backward = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::R)) => {
-                self.turning_up = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::R)) => {
-                self.turning_up = false;
-            },
-            &KeyboardInput(Pressed, _, Some(VirtualKeyCode::F)) => {
-                self.turning_down = true;
-            },
-            &KeyboardInput(Released, _, Some(VirtualKeyCode::F)) => {
-                self.turning_down = false;
-            },
-            _ => {}
+            _ => (),
         }
     }
 }
