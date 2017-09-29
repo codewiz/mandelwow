@@ -69,9 +69,10 @@ Install emsdk:
 cd ~
 curl -O https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
 tar xf emsdk-portable.tar.gz
-source emsdk-portable/emsdk_env.sh
-emsdk install emscripten-1.37.9 --build=MinSizeRel
-emsdk activate emscripten-1.37.9 --build=MinSizeRel
+cd emsdk-portable
+source ./emsdk-portable/emsdk_env.sh
+emsdk install latest --build=MinSizeRel
+emsdk activate latest --build=MinSizeRel
 ```
 
 Install rustc:
