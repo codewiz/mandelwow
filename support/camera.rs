@@ -2,7 +2,7 @@ extern crate glutin;
 
 use cgmath::{Matrix4, Vector4};
 use cgmath::conv::array4x4;
-use glutin::WindowEvent::{KeyboardInput, MouseMoved};
+use glutin::WindowEvent::{KeyboardInput, CursorMoved};
 use glutin::VirtualKeyCode;
 use std::f32;
 use std::f32::consts::PI;
@@ -167,7 +167,7 @@ impl CameraState {
 
     pub fn process_input(&mut self, event: &glutin::WindowEvent) {
         match event {
-            &MouseMoved { position: (x, y), .. }  => {
+            &CursorMoved { position: (x, y), .. }  => {
                 let (x, y) = (x as i32, y as i32);
                 if self.mouse_x == -1 {
                     // Set initial absolute position.
