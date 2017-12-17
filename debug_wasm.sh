@@ -1,5 +1,7 @@
 set -e
-cargo rustc --target asmjs-unknown-emscripten -- -C link-args='-s USE_SDL=2 --preload-file flora.xm'
-cp -a target/asmjs-unknown-emscripten/debug/mandelwow.js .
-cp -a target/asmjs-unknown-emscripten/debug/deps/mandelwow-*.data .
+export CFLAGS="-g"
+export CXXFLAGS="$CFLAGS"
+cargo rustc --target wasm32-unknown-emscripten --bin mandelwow -- -C link-args='-s USE_SDL=2 --preload-file flora.xm'
+cp -a target/wasm32-unknown-emscripten/release/mandelwow.{js,wasm} .
+cp -a target/wasm32-unknown-emscripten/release/deps/mandelwow.data .
 emrun .
