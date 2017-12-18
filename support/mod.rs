@@ -1,8 +1,5 @@
 #![allow(dead_code)]
 
-use glium::{self, Display};
-use glium::vertex::VertexBufferAny;
-
 pub mod camera;
 pub mod vec3;
 
