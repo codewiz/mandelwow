@@ -73,8 +73,7 @@ fn main() {
     let context = glutin::ContextBuilder::new()
         .with_gl_profile(glutin::GlProfile::Core)
         .with_depth_buffer(24)
-        .with_vsync(true)
-        .with_srgb(true);
+        .with_vsync(true);
     let display = glium::Display::new(window, context, &events_loop).unwrap();
     gl_info(&display);
 
