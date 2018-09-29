@@ -1,5 +1,3 @@
-extern crate glutin;
-
 use std::f32;
 use std::ops::Add;
 use std::ops::AddAssign;

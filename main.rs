@@ -8,9 +8,8 @@ extern crate glutin;
 use cgmath::{Euler, Matrix4, Rad, SquareMatrix, Vector3, Vector4, Zero};
 use cgmath::conv::array4x4;
 use glium::{Surface};
-use glutin::ElementState::Pressed;
-use glutin::WindowEvent::KeyboardInput;
-use glutin::VirtualKeyCode;
+use glium::glutin::WindowEvent::KeyboardInput;
+use glium::glutin::VirtualKeyCode;
 use mandelwow_lib::*;
 use std::f32::consts::PI;
 use timer::Timer;
@@ -65,19 +64,20 @@ pub fn set_main_loop_callback<F>(callback : F) where F : FnMut() -> support::Act
 fn main() {
     let mut soundplayer = sound::start();
 
-    let mut events_loop = glutin::EventsLoop::new();
-    let window = glutin::WindowBuilder::new()
-        .with_dimensions(1280, 720)
-        //.with_fullscreen(glutin::get_primary_monitor())
-        .with_title("MandelWow");
-    let context = glutin::ContextBuilder::new()
-        .with_gl_profile(glutin::GlProfile::Core)
-        .with_depth_buffer(24)
+    let mut events_loop = glium::glutin::EventsLoop::new();
+    let window = glium::glutin::WindowBuilder::new()
+        //.with_dimensions(1280, 720)
+        .with_fullscreen(Some(events_loop.get_primary_monitor()));
+        //.with_title("MandelWow");
+    let context = glium::glutin::ContextBuilder::new()
+        //.with_gl_profile(glutin::GlProfile::Core)
+        //.with_gl(glutin::GlRequest::Specific(glutin::Api::WebGl, (2, 0)))
+        //.with_depth_buffer(24)
         .with_vsync(true);
     let display = glium::Display::new(window, context, &events_loop).unwrap();
     gl_info(&display);
 
-    let mut text = text::Text::new(&display, 'A');
+//    let mut text = text::Text::new(&display, 'A');
     let mandelwow_program = mandelwow::program(&display);
     let bounding_box_program = bounding_box::solid_fill_program(&display);
     let shaded_program = shaded_cube::shaded_program(&display);
@@ -181,10 +181,10 @@ fn main() {
                     col: [0., (1. - wave).abs() * 0.5,  wave.abs()],
                 };
                 shaded_cube.draw(&mut frame, &uniforms);
-                text.model = model * text_pos;
+/*                text.model = model * text_pos;
                 text.character = (x + z * SEA_XSIZE) as u8 as char;
                 text.draw(&mut frame, &perspview);
-            }
+*/            }
         }
 
         mandelwow::draw(&display, &mut frame, &mandelwow_program, model, &camera, &bounds, wow);
@@ -193,14 +193,14 @@ fn main() {
 
         let mut action = support::Action::Continue;
         events_loop.poll_events(|event| {
-            if let glutin::Event::WindowEvent { event, .. } = event {
+            if let glium::glutin::Event::WindowEvent { event, .. } = event {
                 camera.process_input(&event);
                 match event {
-                    glutin::WindowEvent::Closed => {
+                    glium::glutin::WindowEvent::CloseRequested => {
                         action = support::Action::Stop
                     },
                     KeyboardInput { input, .. } => {
-                        if input.state == glutin::ElementState::Pressed {
+                        if input.state == glium::glutin::ElementState::Pressed {
                             if let Some(key) = input.virtual_keycode {
                                 match key {
                                     VirtualKeyCode::Escape | VirtualKeyCode::Q => {

@@ -1,8 +1,11 @@
+#cargo-features = ["edition"]
+
 [package]
 name = "mandelwow"
 version = "0.7.0"
 authors = ["Bernie Innocenti <bernie@codewiz.org>"]
 license = "GPL-3.0+"
+#edition = '2018'
 
 [profile.release]
 lto = true
@@ -11,8 +14,8 @@ opt-level = 3
 
 [dependencies]
 cgmath = "*"
-glium = "0.21"
-glutin = "0.14"
+glium = "0.22"
+glutin = "0.18"
 image = { version = "0.18", features = ["png_codec"], optional = true }
 libxm = "1.0.0"
 rust-rocket = { path = "rust-rocket", optional = true }
