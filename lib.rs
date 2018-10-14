@@ -29,7 +29,7 @@ pub fn screenshot(display : &glium::Display) {
     let image = image::DynamicImage::ImageRgba8(image).flipv().to_rgb();
     let image = image::DynamicImage::ImageRgb8(image);
     let mut output = std::fs::File::create(&std::path::Path::new("screenshot.png")).unwrap();
-    image.save(&mut output, image::ImageFormat::PNG).unwrap();
+    image.write_to(&mut output, image::ImageFormat::PNG).unwrap();
 }
 
 #[cfg(not(feature = "image"))]
