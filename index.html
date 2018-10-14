@@ -11,7 +11,7 @@
         padding: none;
       }
       .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
-      div.emscripten { text-align: center; }      
+      div.emscripten { text-align: center; }
       div.emscripten_border { border: 1px solid black; }
       canvas.emscripten { width: 600px; height: 600px; }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
@@ -36,7 +36,7 @@
         border-right: 5px solid rgb(235, 235, 235);
         border-bottom: 5px solid rgb(235, 235, 235);
         border-top: 5px solid rgb(120, 120, 120);
-        
+
         border-radius: 100%;
         background-color: rgb(189, 215, 46);
       }
@@ -95,7 +95,7 @@
 <span id='controls'>
   <span><input type="checkbox" id="resize">Resize canvas</span>
   <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>
-  <span><input type="button" value="Fullscreen" onclick="Module.requestFullScreen(document.getElementById('pointerLock').checked, 
+  <span><input type="button" value="Fullscreen" onclick="Module.requestFullScreen(document.getElementById('pointerLock').checked,
                                                                             document.getElementById('resize').checked)">
   </span>
 </span>
@@ -104,7 +104,6 @@
       <progress value="0" max="100" id="progress" hidden=1></progress>
     </div>
 
-    
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     </div>
@@ -115,18 +114,13 @@
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
       var Module = {
-        preRun: [],
+        preRun: [ function() { ENV.RUST_BACKTRACE = '1' } ],
         postRun: [],
         print: (function() {
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
           return function(text) {
             if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-            // These replacements are necessary if you render to raw HTML
-            //text = text.replace(/&/g, "&amp;");
-            //text = text.replace(/</g, "&lt;");
-            //text = text.replace(/>/g, "&gt;");
-            //text = text.replace('\n', '<br>', 'g');
             console.log(text);
             if (element) {
               element.value += text + "\n";
