@@ -1,11 +1,12 @@
-#version 100
+#version 300 es
+precision lowp float;
 uniform mat4 perspective;
 uniform mat4 view;
 uniform mat4 model;
 uniform vec2 z0;
-attribute mediump vec3 position;
-varying mediump vec2 c;
-varying mediump vec2 z;
+in vec3 position;
+out vec2 c;
+out vec2 z;
 
 void main() {
     mat4 modelview = view * model;

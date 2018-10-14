@@ -1,4 +1,4 @@
-#version 140
+#version 300 es
 
 uniform mat4 model;
 uniform mat4 perspview;
