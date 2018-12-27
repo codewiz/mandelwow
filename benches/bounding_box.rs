@@ -1,11 +1,7 @@
 #![feature(test)]
-
-extern crate mandelwow_lib;
-extern crate glutin;
-#[macro_use(uniform)]
-extern crate glium;
 extern crate test;
 
+use glium::uniform;
 use mandelwow_lib::Cube;
 use mandelwow_lib::bounding_box::*;
 

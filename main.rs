@@ -1,15 +1,8 @@
-extern crate mandelwow_lib;
-
-extern crate cgmath;
-#[macro_use(uniform)]
-extern crate glium;
-extern crate glutin;
-
 use cgmath::conv::array4x4;
 use cgmath::{Euler, Matrix4, Rad, SquareMatrix, Vector3, Vector4, Zero};
 use glium::glutin::VirtualKeyCode;
 use glium::glutin::WindowEvent::KeyboardInput;
-use glium::Surface;
+use glium::{Surface, uniform};
 use mandelwow_lib::*;
 use std::f32::consts::PI;
 use crate::timer::Timer;

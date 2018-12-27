@@ -1,6 +1,6 @@
 use crate::cube::Cube;
 use glium;
-use glium::{Display, Program, Surface};
+use glium::{Display, Program, Surface, implement_vertex};
 use glium::index::{IndexBuffer, PrimitiveType};
 
 pub fn solid_fill_program(display: &Display) -> Program {

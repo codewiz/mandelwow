@@ -3,7 +3,7 @@
 use crate::cube::Cube;
 use glium;
 use glium::index::PrimitiveType;
-use glium::{Display, Program, Surface};
+use glium::{Display, Program, Surface, implement_vertex, uniform};
 use crate::support;
 
 /*

@@ -1,7 +1,7 @@
 use cgmath::conv::array4x4;
 use cgmath::{Matrix4, Vector3};
 use glium;
-use glium::{Display, Program, Surface, texture};
+use glium::{Display, Program, Surface, implement_vertex, texture, uniform};
 use std;
 
 fn gamma<T>(x: T) -> f32
@@ -63,7 +63,7 @@ pub struct Text<'a> {
 }
 
 impl<'a> Text<'a> {
-    pub fn new(display: &Display, character: char) -> Text {
+    pub fn new(display: &Display, character: char) -> Text<'_> {
         let (w, h, pixels) = c64_font();
         let image = glium::texture::RawImage2d {
             data: std::borrow::Cow::from(pixels),
