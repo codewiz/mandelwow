@@ -1,4 +1,4 @@
-use cube::Cube;
+use crate::cube::Cube;
 use glium;
 use glium::{Display, Program, Surface};
 use glium::index::{IndexBuffer, PrimitiveType};

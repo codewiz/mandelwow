@@ -18,9 +18,9 @@ pub mod support;
 pub mod text;
 pub mod timer;
 
-pub use bounding_box::BoundingBox;
-pub use cube::Cube;
-pub use shaded_cube::ShadedCube;
+pub use crate::bounding_box::BoundingBox;
+pub use crate::cube::Cube;
+pub use crate::shaded_cube::ShadedCube;
 
 #[cfg(feature = "image")]
 pub fn screenshot(display : &glium::Display) {

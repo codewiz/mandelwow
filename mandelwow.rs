@@ -1,10 +1,10 @@
 // Wow. Such fractal.
 
-use cube::Cube;
+use crate::cube::Cube;
 use glium;
 use glium::index::PrimitiveType;
 use glium::{Display, Program, Surface};
-use support;
+use crate::support;
 
 /*
 fn mand(cx: f32, cy: f32) -> [f32; 3] {

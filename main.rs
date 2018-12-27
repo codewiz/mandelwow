@@ -12,7 +12,7 @@ use glium::glutin::WindowEvent::KeyboardInput;
 use glium::Surface;
 use mandelwow_lib::*;
 use std::f32::consts::PI;
-use timer::Timer;
+use crate::timer::Timer;
 
 #[cfg(target_os = "emscripten")]
 use std::os::raw::{c_int, c_void};
@@ -120,8 +120,8 @@ fn main() {
 
     let mut timer = Timer::new();
     let mut camera = support::camera::CameraState::new();
-    let mut bounding_box_enabled = true;
-    let mut fullscreen = true;
+    let bounding_box_enabled = true;
+    let _fullscreen = true;
 
     // These are the bounds of the 3D Mandelwow section which we render in 3-space.
     let bounds = Cube {

@@ -4,8 +4,8 @@ use glium;
 use glium::glutin::VirtualKeyCode;
 use std::f32;
 use std::f32::consts::PI;
-use support::vec3::Vec3;
-use support::vec3::norm;
+use crate::support::vec3::Vec3;
+use crate::support::vec3::norm;
 
 #[derive(Default)]
 pub struct CameraState {
