@@ -6,12 +6,15 @@ extern crate glium;
 extern crate glutin;
 extern crate test;
 
-use glium::DisplayBuild;
 use mandelwow_lib::shaded_cube::*;
 
 #[bench]
 fn bench_shaded_cube(b: &mut test::Bencher) {
-    let display = glutin::WindowBuilder::new().build_glium().unwrap();
+    let events_loop = glium::glutin::EventsLoop::new();
+    let window = glium::glutin::WindowBuilder::new();
+    let context = glium::glutin::ContextBuilder::new();
+    let display = glium::Display::new(window, context, &events_loop).unwrap();
+
     let program = shaded_program(&display);
     let cube = ShadedCube::new(&display, &program);
     let mut frame = display.draw();
