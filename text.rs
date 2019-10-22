@@ -22,7 +22,6 @@ where
 
 #[cfg(feature = "image")]
 fn c64_font() -> (u32, u32, Vec<u8>) {
-    use image;
     let image = image::load_from_memory_with_format(
         &include_bytes!("textures/c64-font.png")[..],
         image::PNG,
