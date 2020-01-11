@@ -10,6 +10,8 @@ pub mod timer;
 pub use crate::bounding_box::BoundingBox;
 pub use crate::cube::Cube;
 pub use crate::shaded_cube::ShadedCube;
+pub use crate::text::Text;
+pub use crate::timer::Timer;
 
 #[cfg(feature = "image")]
 pub fn screenshot(display : &glium::Display) {

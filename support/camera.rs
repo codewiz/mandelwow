@@ -1,7 +1,7 @@
 use cgmath::{Matrix4, Vector4};
 use cgmath::conv::array4x4;
 use glium;
-use glium::glutin::VirtualKeyCode;
+use glium::glutin::event::{ ElementState, VirtualKeyCode, WindowEvent };
 use std::f32;
 use std::f32::consts::PI;
 use crate::support::vec3::Vec3;
@@ -163,9 +163,10 @@ impl CameraState {
         //println!("camera_dir = {:?}", self.dir);
     }
 
-    pub fn process_input(&mut self, event: &glium::glutin::WindowEvent) {
+    pub fn process_input(&mut self, event: &WindowEvent) {
+        //println!("camera event={:?}", event);
         match event {
-            &glium::glutin::WindowEvent::CursorMoved { position, .. }  => {
+            &WindowEvent::CursorMoved { position, .. }  => {
                 let (x, y) = (position.x as i32, position.y as i32);
                 if self.mouse_x == -1 {
                     // Set initial absolute position.
@@ -177,8 +178,8 @@ impl CameraState {
                 self.mouse_x = x;
                 self.mouse_y = y;
             }
-            &glium::glutin::WindowEvent::KeyboardInput { input, .. } => {
-                let pressed = input.state == glium::glutin::ElementState::Pressed;
+            &WindowEvent::KeyboardInput { input, .. } => {
+                let pressed = input.state == ElementState::Pressed;
                 let key = match input.virtual_keycode {
                     Some(key) => key,
                     None => return,

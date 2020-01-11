@@ -1,6 +1,7 @@
 use glium;
 use glium::{Display, Program, Surface, implement_vertex};
 use glium::index::{IndexBuffer, PrimitiveType};
+use std::rc::Rc;
 
 pub fn shaded_program(display: &Display) -> Program {
     let vertex_shader_src = include_str!("shaders/shaded.vert");
@@ -15,14 +16,14 @@ struct Vertex {
 }
 implement_vertex!(Vertex, position, normal);
 
-pub struct ShadedCube<'a> {
+pub struct ShadedCube {
     vertexes: glium::VertexBuffer<Vertex>,
-    program: &'a Program,
+    program: Rc<Program>,
     indices: IndexBuffer<u16>,
 }
 
-impl<'a> ShadedCube<'a> {
-    pub fn new(display: &Display, program: &'a Program) -> ShadedCube<'a> {
+impl<'a> ShadedCube {
+    pub fn new(display: &Display, program: Rc<Program>) -> ShadedCube {
         //      x--->
         //      4 ──────┐ 5
         //      ╱┆     ╱│
@@ -71,6 +72,6 @@ impl<'a> ShadedCube<'a> {
             backface_culling: glium::draw_parameters::BackfaceCullingMode::CullClockwise,
             ..Default::default()
         };
-        frame.draw(&self.vertexes, &self.indices, self.program, uniforms, &params).unwrap();
+        frame.draw(&self.vertexes, &self.indices, &self.program, uniforms, &params).unwrap();
     }
 }

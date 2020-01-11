@@ -1,5 +1,5 @@
 use cgmath::conv::array4x4;
-use cgmath::{Matrix4, Vector3};
+use cgmath::Matrix4;
 use glium;
 use glium::{Display, Program, Surface, implement_vertex, texture, uniform};
 use std;
@@ -57,12 +57,10 @@ pub struct Text<'a> {
     index_buffer: glium::IndexBuffer<u16>,
     program: glium::Program,
     params: glium::DrawParameters<'a>,
-    pub model: Matrix4<f32>,
-    pub character: char,
 }
 
 impl<'a> Text<'a> {
-    pub fn new(display: &Display, character: char) -> Text<'_> {
+    pub fn new(display: &Display) -> Text<'a> {
         let (w, h, pixels) = c64_font();
         let image = glium::texture::RawImage2d {
             data: std::borrow::Cow::from(pixels),
@@ -124,19 +122,17 @@ impl<'a> Text<'a> {
             index_buffer: index_buffer,
             program: text_program(display),
             params: params,
-            model: Matrix4::from_translation(Vector3::unit_z() * (-1.0)),
-            character: character,
         }
     }
 
-    pub fn draw(&self, frame: &mut glium::Frame, perspview: &[[f32; 4]; 4]) {
+    pub fn draw(&self, frame: &mut glium::Frame, c: char, model: &Matrix4<f32>, perspview: &[[f32; 4]; 4]) {
         let uniforms =
             uniform! {
-            model: array4x4(self.model),
+            model: array4x4(*model),
             perspview: *perspview,
             tex: self.tex.sampled()
                 .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
-            index: self.character as i32,
+            index: c as i32,
             // RGB values from http://unusedino.de/ec64/technical/misc/vic656x/colors/
             bgcolor: srgb([ 64,  50, 133u8]),  //  6 - blue
             fgcolor: srgb([120, 106, 189u8]),  // 14 - light blue

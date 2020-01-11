@@ -15,8 +15,8 @@ opt-level = 3
 [dependencies]
 cgmath = "*"
 #gleam = "*"
-glium = "0.25.1"
-glutin = "0.21"
+glium = "0.26.0-alpha6"
+glutin = "0.22.0-alpha6"
 image = { version = "*", features = ["png_codec"], optional = true }
 libxm = "1.0.0"
 rust-rocket = { path = "rust-rocket", optional = true }

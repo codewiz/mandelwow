@@ -2,6 +2,7 @@ use crate::cube::Cube;
 use glium;
 use glium::{Display, Program, Surface, implement_vertex};
 use glium::index::{IndexBuffer, PrimitiveType};
+use std::rc::Rc;
 
 pub fn solid_fill_program(display: &Display) -> Program {
     let vertex_shader_src = include_str!("shaders/solid.vert");
@@ -13,14 +14,14 @@ pub fn solid_fill_program(display: &Display) -> Program {
 struct Vertex { position: [f32; 3] }
 implement_vertex!(Vertex, position);
 
-pub struct BoundingBox<'a> {
+pub struct BoundingBox {
     vertexes: glium::VertexBuffer<Vertex>,
-    program: &'a Program,
+    program: Rc<Program>,
     indices: IndexBuffer<u16>,
 }
 
-impl<'a> BoundingBox<'a> {
-    pub fn new(display: &Display, c: &Cube, program: &'a Program) -> BoundingBox<'a> {
+impl BoundingBox {
+    pub fn new(display: &Display, c: &Cube, program: Rc<Program>) -> BoundingBox {
         let vertex_data = [
             Vertex { position: [c.xmin, c.ymin, c.zmin] },
             Vertex { position: [c.xmax, c.ymin, c.zmin] },
@@ -54,6 +55,6 @@ impl<'a> BoundingBox<'a> {
             blend: glium::Blend::alpha_blending(),
             ..Default::default()
         };
-        frame.draw(&self.vertexes, &self.indices, self.program, uniforms, &params).unwrap();
+        frame.draw(&self.vertexes, &self.indices, &self.program, uniforms, &params).unwrap();
     }
 }
