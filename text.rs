@@ -51,16 +51,16 @@ struct Vertex {
 }
 implement_vertex!(Vertex, position, tex_coords);
 
-pub struct Text<'a> {
+pub struct Text {
     tex: texture::Texture2d,
     vertex_buffer: glium::VertexBuffer<Vertex>,
     index_buffer: glium::IndexBuffer<u16>,
     program: glium::Program,
-    params: glium::DrawParameters<'a>,
+    params: glium::DrawParameters<'static>,
 }
 
-impl<'a> Text<'a> {
-    pub fn new(display: &Display) -> Text<'a> {
+impl Text {
+    pub fn new(display: &Display) -> Text {
         let (w, h, pixels) = c64_font();
         let image = glium::texture::RawImage2d {
             data: std::borrow::Cow::from(pixels),

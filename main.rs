@@ -29,16 +29,14 @@ fn gl_info(display: &glium::Display) {
 const SEA_XSIZE: usize = 40;
 const SEA_ZSIZE: usize = 25;
 
-struct World<'a> {
-    display: Display,
-
+struct World {
     mandelwow_program: Rc<Program>,
     mandelwow_bounds: Cube,
     mandelwow_bbox: BoundingBox,
     bounding_box_enabled: bool,
 
     shaded_cube: ShadedCube,
-    text: Text<'a>,
+    text: Text,
 
     sea: [[Vector3<f32>; SEA_ZSIZE]; SEA_XSIZE],
 
@@ -47,11 +45,11 @@ struct World<'a> {
     last_hit: f32,
 }
 
-impl<'a> World<'a> {
-    pub fn new(display: glium::Display) -> World<'a> {
-        let mandelwow_program = Rc::new(mandelwow::program(&display));
-        let bounding_box_program = Rc::new(bounding_box::solid_fill_program(&display));
-        let shaded_program = Rc::new(shaded_cube::shaded_program(&display));
+impl World {
+    pub fn new(display: &glium::Display) -> World {
+        let mandelwow_program = Rc::new(mandelwow::program(display));
+        let bounding_box_program = Rc::new(bounding_box::solid_fill_program(display));
+        let shaded_program = Rc::new(shaded_cube::shaded_program(display));
 
         // These are the bounds for the 3D slice of the 4D Mandelwow
         let mandelwow_bounds = Cube {
@@ -87,23 +85,22 @@ impl<'a> World<'a> {
         World {
             mandelwow_program,
             mandelwow_bbox: BoundingBox::new(
-                &display, &mandelwow_bounds, bounding_box_program.clone()),
+                display, &mandelwow_bounds, bounding_box_program.clone()),
             mandelwow_bounds,
             bounding_box_enabled: true,
 
-            shaded_cube: ShadedCube::new(&display, shaded_program.clone()),
-            text: text::Text::new(&display),
-            sea: sea,
+            shaded_cube: ShadedCube::new(display, shaded_program.clone()),
+            text: text::Text::new(display),
+            sea,
 
             hit_time: 0.0,
             last_hit: 0.0,
-
-            display,
         }
     }
 
     fn draw_frame(
         &self,
+        display: &Display,
         camera: &support::camera::CameraState,
         t: f32,
     ) {
@@ -120,7 +117,7 @@ impl<'a> World<'a> {
 
         //println!("t={} w={:?} camera={:?}", t, w, camera.get_pos());
 
-        let mut frame = self.display.draw();
+        let mut frame = display.draw();
         frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
         let rotation = Matrix4::from(Euler {
@@ -176,7 +173,7 @@ impl<'a> World<'a> {
         }
 
         mandelwow::draw(
-            &self.display,
+            &display,
             &mut frame,
             &self.mandelwow_program,
             model,
@@ -275,7 +272,7 @@ fn main() {
 
     let display = glium::Display::new(window, context, &event_loop).unwrap();
     gl_info(&display);
-    let mut world = World::new(display);
+    let mut world = World::new(&display);
 
     let mut timer = Timer::new();
     let mut camera = support::camera::CameraState::new();
@@ -296,7 +293,7 @@ fn main() {
             Event::NewEvents(cause) => {
                 match cause {
                     event::StartCause::ResumeTimeReached { .. } | event::StartCause::Init => {
-                        world.draw_frame(&camera, t);
+                        world.draw_frame(&display, &camera, t);
                     },
                     _ => {}
                 }
