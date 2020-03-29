@@ -72,6 +72,7 @@ impl World {
         println!("xstep={} ystep={:?}", sea_xstep, sea_zstep);
 
         let mut sea = [[Vector3::zero(); SEA_ZSIZE]; SEA_XSIZE];
+        #[allow(clippy::needless_range_loop)]
         for x in 0..SEA_XSIZE {
             for z in 0..SEA_ZSIZE {
                 sea[x][z] = Vector3 {
@@ -85,11 +86,11 @@ impl World {
         World {
             mandelwow_program,
             mandelwow_bbox: BoundingBox::new(
-                display, &mandelwow_bounds, bounding_box_program.clone()),
+                display, &mandelwow_bounds, bounding_box_program),
             mandelwow_bounds,
             bounding_box_enabled: true,
 
-            shaded_cube: ShadedCube::new(display, shaded_program.clone()),
+            shaded_cube: ShadedCube::new(display, shaded_program),
             text: text::Text::new(display),
             sea,
 
@@ -310,7 +311,7 @@ fn main() {
                                     VirtualKeyCode::P => timer.pause ^= true,
                                     VirtualKeyCode::PageUp => timer.t += 0.1,
                                     VirtualKeyCode::PageDown => timer.t -= 0.2,
-                                    VirtualKeyCode::F10 => screenshot(&display),
+                                    VirtualKeyCode::F10 => screenshot::take_screenshot(&display),
                                     VirtualKeyCode::F11 | VirtualKeyCode::Return => {
                                         fullscreen ^= true;
                                         let fs = if fullscreen {
