@@ -253,12 +253,9 @@ fn main() {
     let mut soundplayer = sound::start();
 
     let event_loop = glutin::event_loop::EventLoop::new();
-    //let fullscreen = Some(glutin::window::Fullscreen::Borderless(event_loop.primary_monitor()));
     let window = glutin::window::WindowBuilder::new()
         //.with_dimensions(1280, 720)
-        //.with_fullscreen(fullscreen);
-        ;
-    //.with_title("MandelWow");
+        .with_title("MandelWow");
     let context = glutin::ContextBuilder::new()
         //.with_gl_profile(glutin::GlProfile::Core)
         //.with_gl(glutin::GlRequest::Specific(glutin::Api::WebGl, (2, 0)))
@@ -276,7 +273,7 @@ fn main() {
 
     let mut timer = Timer::new();
     let mut camera = support::camera::CameraState::new();
-    let _fullscreen = true;
+    let mut fullscreen = true;
 
     event_loop.run(move |event, _, control_flow| {
         let t = timer.t;
@@ -315,17 +312,15 @@ fn main() {
                                     VirtualKeyCode::PageDown => timer.t -= 0.2,
                                     VirtualKeyCode::F10 => screenshot(&display),
                                     VirtualKeyCode::F11 | VirtualKeyCode::Return => {
-                                        /*
                                         fullscreen ^= true;
-                                        if fullscreen {
-                                            // Not implemented on Linux
-                                            glutin::WindowBuilder::new()
-                                                .with_fullscreen(glutin::get_primary_monitor())
-                                                .with_depth_buffer(24) .rebuild_glium(&display).unwrap(); }
-                                        else {
-                                            glutin::WindowBuilder::new()
-                                                .rebuild_glium(&display).unwrap();
-                                        }*/
+                                        let fs = if fullscreen {
+                                            let monitor_handle = display.gl_window().window()
+                                                .available_monitors().next().unwrap();
+                                            Some(glium::glutin::window::Fullscreen::Borderless(monitor_handle))
+                                        } else {
+                                            None
+                                        };
+                                        display.gl_window().window().set_fullscreen(fs);
                                     }
                                     _ => (),
                                 }
