@@ -248,7 +248,7 @@ fn main() {
             emscripten_GetProcAddress(addr.into_raw() as *const _) as *const _
         });
     gl.glGetInternalformativ(0, 0, 0, 0, 0);
-    */
+*/
 
     let mut soundplayer = sound::start();
 
@@ -288,7 +288,7 @@ fn main() {
 
         camera.update();
 
-        *control_flow = ControlFlow::WaitUntil(Instant::now() + Duration::from_nanos(16666667));
+        *control_flow = ControlFlow::WaitUntil(Instant::now() + Duration::from_nanos(16_666_667));
         match event {
             Event::NewEvents(cause) => {
                 match cause {
@@ -297,60 +297,45 @@ fn main() {
                     },
                     _ => {}
                 }
-            } _ => (),
-        }
-        if let Event::WindowEvent { event, .. } = event {
-            camera.process_input(&event);
-            match event {
-                WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                WindowEvent::KeyboardInput { input, .. } => {
-                    if input.state == event::ElementState::Pressed {
-                        if let Some(key) = input.virtual_keycode {
-                            match key {
-                                VirtualKeyCode::Escape | VirtualKeyCode::Q => {
-                                    *control_flow = ControlFlow::Exit;
+            }
+            Event::WindowEvent { event, .. } => {
+                camera.process_input(&event);
+                match event {
+                    WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+                    WindowEvent::KeyboardInput { input, .. } => {
+                        if input.state == event::ElementState::Pressed {
+                            if let Some(key) = input.virtual_keycode {
+                                match key {
+                                    VirtualKeyCode::Escape | VirtualKeyCode::Q => {
+                                        *control_flow = ControlFlow::Exit;
+                                    }
+                                    VirtualKeyCode::B => world.bounding_box_enabled ^= true,
+                                    VirtualKeyCode::P => timer.pause ^= true,
+                                    VirtualKeyCode::PageUp => timer.t += 0.1,
+                                    VirtualKeyCode::PageDown => timer.t -= 0.2,
+                                    VirtualKeyCode::F10 => screenshot(&display),
+                                    VirtualKeyCode::F11 | VirtualKeyCode::Return => {
+                                        /*
+                                        fullscreen ^= true;
+                                        if fullscreen {
+                                            // Not implemented on Linux
+                                            glutin::WindowBuilder::new()
+                                                .with_fullscreen(glutin::get_primary_monitor())
+                                                .with_depth_buffer(24) .rebuild_glium(&display).unwrap(); }
+                                        else {
+                                            glutin::WindowBuilder::new()
+                                                .rebuild_glium(&display).unwrap();
+                                        }*/
+                                    }
+                                    _ => (),
                                 }
-                                _ => (),
                             }
                         }
                     }
+                    _ => (),
                 }
-                /*
-                KeyboardInput { input: glutin::KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::Escape), .. } } |
-                KeyboardInput { input: glutin::KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::Q), .. } } => {
-                    *control_flow = ControlFlow::Exit;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::B) } => {
-                    bounding_box_enabled ^= true;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::P) } => {
-                    timer.pause ^= true;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::PageUp) } => {
-                    timer.t += 0.01;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::PageDown) } => {
-                    timer.t -= 0.01;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::F10) } => {
-                    screenshot(&display);
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::F11) } => {
-                    fullscreen ^= true;
-                    if fullscreen {
-                        // Not implemented on Linux
-                        glutin::WindowBuilder::new()
-                            .with_fullscreen(glutin::get_primary_monitor())
-                            .with_depth_buffer(24)
-                            .rebuild_glium(&display).unwrap();
-                    } else {
-                        glutin::WindowBuilder::new()
-                            .rebuild_glium(&display).unwrap();
-                    }
-                },
-                */
-                _ => (),
-            }
+            },
+            _ => (),
         }
 
         timer.update();
