@@ -6,7 +6,7 @@ use glium::{Display, Program, Surface, uniform};
 use mandelwow_lib::*;
 use std::f32::consts::PI;
 use std::rc::Rc;
-use std::time::{Duration, Instant};
+use instant::{Duration, Instant};
 
 #[cfg(target_os = "emscripten")]
 use std::os::raw::{c_int, c_void};
