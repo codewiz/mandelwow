@@ -15,13 +15,15 @@ opt-level = 3
 [dependencies]
 cgmath = "*"
 #gleam = "*"
-glium = "0.26.0"
-glutin = "0.23.0"
+glium = "0.27"
+glutin = "0.24"
 image = { version = "*", features = ["png_codec"], optional = true }
+instant = "*"
 libxm = "1.0.0"
 rust-rocket = { path = "rust-rocket", optional = true }
 rand = "*"
 sdl2 = "*"
+winit = { version = "*", features = ["stdweb"] }
 
 [features]
 default = ["image", "logging"]
