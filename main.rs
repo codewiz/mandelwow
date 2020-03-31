@@ -72,6 +72,7 @@ impl World {
         println!("xstep={} ystep={:?}", sea_xstep, sea_zstep);
 
         let mut sea = [[Vector3::zero(); SEA_ZSIZE]; SEA_XSIZE];
+        #[allow(clippy::needless_range_loop)]
         for x in 0..SEA_XSIZE {
             for z in 0..SEA_ZSIZE {
                 sea[x][z] = Vector3 {
@@ -85,11 +86,11 @@ impl World {
         World {
             mandelwow_program,
             mandelwow_bbox: BoundingBox::new(
-                display, &mandelwow_bounds, bounding_box_program.clone()),
+                display, &mandelwow_bounds, bounding_box_program),
             mandelwow_bounds,
             bounding_box_enabled: true,
 
-            shaded_cube: ShadedCube::new(display, shaded_program.clone()),
+            shaded_cube: ShadedCube::new(display, shaded_program),
             text: text::Text::new(display),
             sea,
 
@@ -248,17 +249,14 @@ fn main() {
             emscripten_GetProcAddress(addr.into_raw() as *const _) as *const _
         });
     gl.glGetInternalformativ(0, 0, 0, 0, 0);
-    */
+*/
 
     let mut soundplayer = sound::start();
 
     let event_loop = glutin::event_loop::EventLoop::new();
-    //let fullscreen = Some(glutin::window::Fullscreen::Borderless(event_loop.primary_monitor()));
     let window = glutin::window::WindowBuilder::new()
         //.with_dimensions(1280, 720)
-        //.with_fullscreen(fullscreen);
-        ;
-    //.with_title("MandelWow");
+        .with_title("MandelWow");
     let context = glutin::ContextBuilder::new()
         //.with_gl_profile(glutin::GlProfile::Core)
         //.with_gl(glutin::GlRequest::Specific(glutin::Api::WebGl, (2, 0)))
@@ -276,7 +274,7 @@ fn main() {
 
     let mut timer = Timer::new();
     let mut camera = support::camera::CameraState::new();
-    let _fullscreen = true;
+    let mut fullscreen = true;
 
     event_loop.run(move |event, _, control_flow| {
         let t = timer.t;
@@ -288,7 +286,7 @@ fn main() {
 
         camera.update();
 
-        *control_flow = ControlFlow::WaitUntil(Instant::now() + Duration::from_nanos(16666667));
+        *control_flow = ControlFlow::WaitUntil(Instant::now() + Duration::from_nanos(16_666_667));
         match event {
             Event::NewEvents(cause) => {
                 match cause {
@@ -297,60 +295,43 @@ fn main() {
                     },
                     _ => {}
                 }
-            } _ => (),
-        }
-        if let Event::WindowEvent { event, .. } = event {
-            camera.process_input(&event);
-            match event {
-                WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                WindowEvent::KeyboardInput { input, .. } => {
-                    if input.state == event::ElementState::Pressed {
-                        if let Some(key) = input.virtual_keycode {
-                            match key {
-                                VirtualKeyCode::Escape | VirtualKeyCode::Q => {
-                                    *control_flow = ControlFlow::Exit;
+            }
+            Event::WindowEvent { event, .. } => {
+                camera.process_input(&event);
+                match event {
+                    WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+                    WindowEvent::KeyboardInput { input, .. } => {
+                        if input.state == event::ElementState::Pressed {
+                            if let Some(key) = input.virtual_keycode {
+                                match key {
+                                    VirtualKeyCode::Escape | VirtualKeyCode::Q => {
+                                        *control_flow = ControlFlow::Exit;
+                                    }
+                                    VirtualKeyCode::B => world.bounding_box_enabled ^= true,
+                                    VirtualKeyCode::P => timer.pause ^= true,
+                                    VirtualKeyCode::PageUp => timer.t += 0.1,
+                                    VirtualKeyCode::PageDown => timer.t -= 0.2,
+                                    VirtualKeyCode::F10 => screenshot::take_screenshot(&display),
+                                    VirtualKeyCode::F11 | VirtualKeyCode::Return => {
+                                        fullscreen ^= true;
+                                        let fs = if fullscreen {
+                                            let monitor_handle = display.gl_window().window()
+                                                .available_monitors().next().unwrap();
+                                            Some(glium::glutin::window::Fullscreen::Borderless(monitor_handle))
+                                        } else {
+                                            None
+                                        };
+                                        display.gl_window().window().set_fullscreen(fs);
+                                    }
+                                    _ => (),
                                 }
-                                _ => (),
                             }
                         }
                     }
+                    _ => (),
                 }
-                /*
-                KeyboardInput { input: glutin::KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::Escape), .. } } |
-                KeyboardInput { input: glutin::KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::Q), .. } } => {
-                    *control_flow = ControlFlow::Exit;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::B) } => {
-                    bounding_box_enabled ^= true;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::P) } => {
-                    timer.pause ^= true;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::PageUp) } => {
-                    timer.t += 0.01;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::PageDown) } => {
-                    timer.t -= 0.01;
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::F10) } => {
-                    screenshot(&display);
-                },
-                KeyboardInput { state: Pressed, virtual_keycode: Some(VirtualKeyCode::F11) } => {
-                    fullscreen ^= true;
-                    if fullscreen {
-                        // Not implemented on Linux
-                        glutin::WindowBuilder::new()
-                            .with_fullscreen(glutin::get_primary_monitor())
-                            .with_depth_buffer(24)
-                            .rebuild_glium(&display).unwrap();
-                    } else {
-                        glutin::WindowBuilder::new()
-                            .rebuild_glium(&display).unwrap();
-                    }
-                },
-                */
-                _ => (),
-            }
+            },
+            _ => (),
         }
 
         timer.update();

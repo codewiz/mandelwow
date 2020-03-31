@@ -9,6 +9,7 @@ type Rocket = rust_rocket::Rocket;
 #[cfg(not(feature = "editor"))]
 type Rocket = ();
 
+#[cfg(feature = "editor")]
 const BPS: f32 = 10.0;
 
 #[derive(Debug)]
