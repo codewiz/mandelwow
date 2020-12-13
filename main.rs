@@ -249,7 +249,7 @@ fn main() {
             emscripten_GetProcAddress(addr.into_raw() as *const _) as *const _
         });
     gl.glGetInternalformativ(0, 0, 0, 0, 0);
-*/
+    */
 
     let mut soundplayer = sound::start();
 
@@ -274,7 +274,7 @@ fn main() {
 
     let mut timer = Timer::new();
     let mut camera = support::camera::CameraState::new();
-    let mut fullscreen = true;
+    let mut fullscreen = false;
 
     event_loop.run(move |event, _, control_flow| {
         let t = timer.t;
@@ -315,9 +315,9 @@ fn main() {
                                     VirtualKeyCode::F11 | VirtualKeyCode::Return => {
                                         fullscreen ^= true;
                                         let fs = if fullscreen {
-                                            let monitor_handle = display.gl_window().window()
-                                                .available_monitors().next().unwrap();
-                                            Some(glium::glutin::window::Fullscreen::Borderless(monitor_handle))
+                                            // let monitor_handle = display.gl_window().window()
+                                            //    .available_monitors().next().unwrap();
+                                            Some(glium::glutin::window::Fullscreen::Borderless(None))
                                         } else {
                                             None
                                         };

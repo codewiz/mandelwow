@@ -15,15 +15,15 @@ opt-level = 3
 [dependencies]
 cgmath = "*"
 #gleam = "*"
-glium = "0.27"
-glutin = "0.24"
+glium = "0.28"
+glutin = "0.25"
+winit = { version = "0.23", features = ["stdweb"] }
 image = { version = "*", features = ["png_codec"], optional = true }
 instant = "*"
 libxm = "1.0.0"
 rust-rocket = { path = "rust-rocket", optional = true }
 rand = "*"
 sdl2 = "*"
-winit = { version = "*", features = ["stdweb"] }
 
 [features]
 default = ["image", "logging"]
@@ -35,9 +35,9 @@ editor = ["rust-rocket"]
 #"glutin:0.7.4" = { path = "/home/bernie/src/glutin" }
 #"glium:0.16.0" = { path = "/home/bernie/src/glium" }
 
-[target.armv7-linux-androideabi]
-ar = "$ANDROID_NDK_HOME/arm/bin/arm-linux-androideabi-ar"
-linker = "$ANDROID_NDK_HOME/arm/bin/arm-linux-androideabi-clang"
+#[target.armv7-linux-androideabi]
+#ar = "$ANDROID_NDK_HOME/arm/bin/arm-linux-androideabi-ar"
+#linker = "$ANDROID_NDK_HOME/arm/bin/arm-linux-androideabi-clang"
 
 [lib]
 name = "mandelwow_lib"
