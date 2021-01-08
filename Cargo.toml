@@ -15,11 +15,11 @@ opt-level = 3
 [dependencies]
 cgmath = "*"
 #gleam = "*"
-glium = "0.28"
-glutin = "0.25"
-winit = { version = "0.23", features = ["stdweb"] }
+glium = "0.29"
+glutin = "0.26"
+winit = { version = "0.24", features = ["web-sys"] }
 image = { version = "*", features = ["png_codec"], optional = true }
-instant = "*"
+instant = { version = "0.1", features = ["wasm-bindgen"] }
 libxm = "1.0.0"
 rust-rocket = { path = "rust-rocket", optional = true }
 rand = "*"
