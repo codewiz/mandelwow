@@ -277,7 +277,6 @@ fn main() {
     let mut fullscreen = false;
 
     event_loop.run(move |event, _, control_flow| {
-        timer.update();
         let t = timer.t;
         let new_hit = sound::hit_event(&mut soundplayer);
         if new_hit > world.last_hit {
@@ -290,6 +289,7 @@ fn main() {
         *control_flow = ControlFlow::WaitUntil(timer.now + Duration::from_nanos(16_666_667));
         match event {
             Event::MainEventsCleared => {
+                timer.update();
                 world.draw_frame(&display, &camera, t);
             }
             Event::NewEvents(cause) => {
@@ -316,7 +316,7 @@ fn main() {
                                     VirtualKeyCode::PageUp => timer.t += 0.1,
                                     VirtualKeyCode::PageDown => timer.t -= 0.2,
                                     VirtualKeyCode::F10 => screenshot::take_screenshot(&display),
-                                    VirtualKeyCode::F | VirtualKeyCode::F11 | VirtualKeyCode::Return => {
+                                    VirtualKeyCode::F11 | VirtualKeyCode::Return => {
                                         fullscreen ^= true;
                                         let fs = if fullscreen {
                                             // let monitor_handle = display.gl_window().window()

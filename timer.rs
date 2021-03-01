@@ -14,9 +14,10 @@ const BPS: f32 = 10.0;
 
 #[derive(Debug)]
 pub struct Timer {
-    pub t: f32,
-    pub now: Instant,
-    frame: u32,
+    pub t: f32,          /// Simulation time (starts from 0 and does not advance while on pause).
+    pub now: Instant,    /// Wall time, use instead of Instant::now() for frame-consistent time.
+    prev_time: Instant,  /// Time of previous frame.
+    frame: u32,          /// Frame count, starts from 0 and does not increment while on pause.
 
     last_report_time: Instant,
     last_report_frame: u32,
@@ -35,6 +36,7 @@ impl Timer {
         Timer {
             t: 0.0,
             now,
+            prev_time: now,
             frame: 0,
             last_report_time: now,
             last_report_frame: 0,
@@ -45,14 +47,17 @@ impl Timer {
         }
     }
 
+    // To be called once per frame, just before rendering
     pub fn update(&mut self) {
+        self.prev_time = self.now;
         self.now = Instant::now();
-        self.poll_rocket();
         if !self.pause {
-            // Increment time
-            self.t += 0.01;
+            // Increment simulation time
+            let frame_time = self.now - self.prev_time;
+            self.t += frame_time.as_secs_f32();
             self.frame += 1;
         }
+        self.poll_rocket();
         self.maybe_report();
     }
 
