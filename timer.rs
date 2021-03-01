@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 use rust_rocket;
 
 #[cfg(feature = "editor")]
-type Rocket = rust_rocket::Rocket;
+type Rocket = rust_rocket::client::RocketClient;
 
 #[cfg(not(feature = "editor"))]
 type Rocket = ();
@@ -100,17 +100,19 @@ impl Timer {
 
     #[cfg(feature = "editor")]
     fn poll_rocket(&mut self) {
+        use rust_rocket::client::Event;
+
         match self.rocket {
             Some(ref mut rocket) => {
                 let current_row = (self.t * BPS) as u32;
-                if let Some(event) = rocket.poll_events() {
+                if let Some(event) = rocket.poll_events().unwrap() {
                     match event {
-                        rust_rocket::Event::SetRow(row) => {
+                        Event::SetRow(row) => {
                             println!("SetRow (row: {:?})", row);
                             self.t = row as f32 / BPS;
                         }
-                        rust_rocket::Event::Pause(_) => {
-                            let track1 = rocket.get_track_mut("test");
+                        Event::Pause(_) => {
+                            let track1 = rocket.get_track_mut("test").unwrap();
                             println!("Pause (value: {:?}) (row: {:?})", track1.get_value(current_row as f32), current_row);
                         }
                         _ => (),
