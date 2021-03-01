@@ -166,7 +166,7 @@ impl CameraState {
     pub fn process_input(&mut self, event: &WindowEvent) {
         //println!("camera event={:?}", event);
         match event {
-            &WindowEvent::CursorMoved { position, .. }  => {
+            WindowEvent::CursorMoved { position, .. }  => {
                 let (x, y) = (position.x as i32, position.y as i32);
                 if self.mouse_x == -1 {
                     // Set initial absolute position.
@@ -178,7 +178,7 @@ impl CameraState {
                 self.mouse_x = x;
                 self.mouse_y = y;
             }
-            &WindowEvent::KeyboardInput { input, .. } => {
+            WindowEvent::KeyboardInput { input, .. } => {
                 let pressed = input.state == ElementState::Pressed;
                 let key = match input.virtual_keycode {
                     Some(key) => key,
