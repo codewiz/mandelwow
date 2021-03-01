@@ -1,12 +1,12 @@
 use cgmath::conv::array4x4;
 use cgmath::{Euler, Matrix4, Rad, SquareMatrix, Vector3, Vector4, Zero};
 use glium::glutin::event::{ self, Event, VirtualKeyCode, WindowEvent };
-use glium::glutin::event_loop::{ ControlFlow };
+use glium::glutin::event_loop::ControlFlow;
 use glium::{Display, Program, Surface, uniform};
+use instant::Duration;
 use mandelwow_lib::*;
 use std::f32::consts::PI;
 use std::rc::Rc;
-use instant::{Duration, Instant};
 
 #[cfg(target_os = "emscripten")]
 use std::os::raw::{c_int, c_void};
@@ -277,6 +277,7 @@ fn main() {
     let mut fullscreen = false;
 
     event_loop.run(move |event, _, control_flow| {
+        timer.update();
         let t = timer.t;
         let new_hit = sound::hit_event(&mut soundplayer);
         if new_hit > world.last_hit {
@@ -286,12 +287,15 @@ fn main() {
 
         camera.update();
 
-        *control_flow = ControlFlow::WaitUntil(Instant::now() + Duration::from_nanos(16_666_667));
+        *control_flow = ControlFlow::WaitUntil(timer.now + Duration::from_nanos(16_666_667));
         match event {
+            Event::MainEventsCleared => {
+                world.draw_frame(&display, &camera, t);
+            }
             Event::NewEvents(cause) => {
                 match cause {
                     event::StartCause::ResumeTimeReached { .. } | event::StartCause::Init => {
-                        world.draw_frame(&display, &camera, t);
+                        // FIXME
                     },
                     _ => {}
                 }
@@ -312,7 +316,7 @@ fn main() {
                                     VirtualKeyCode::PageUp => timer.t += 0.1,
                                     VirtualKeyCode::PageDown => timer.t -= 0.2,
                                     VirtualKeyCode::F10 => screenshot::take_screenshot(&display),
-                                    VirtualKeyCode::F11 | VirtualKeyCode::Return => {
+                                    VirtualKeyCode::F | VirtualKeyCode::F11 | VirtualKeyCode::Return => {
                                         fullscreen ^= true;
                                         let fs = if fullscreen {
                                             // let monitor_handle = display.gl_window().window()
@@ -333,7 +337,5 @@ fn main() {
             },
             _ => (),
         }
-
-        timer.update();
     });
 }

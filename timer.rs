@@ -15,7 +15,7 @@ const BPS: f32 = 10.0;
 #[derive(Debug)]
 pub struct Timer {
     pub t: f32,
-
+    pub now: Instant,
     frame: u32,
 
     last_report_time: Instant,
@@ -34,6 +34,7 @@ impl Timer {
         let now = Instant::now();
         Timer {
             t: 0.0,
+            now,
             frame: 0,
             last_report_time: now,
             last_report_frame: 0,
@@ -45,24 +46,24 @@ impl Timer {
     }
 
     pub fn update(&mut self) {
-        let now = Instant::now();
+        self.now = Instant::now();
         self.poll_rocket();
         if !self.pause {
             // Increment time
             self.t += 0.01;
             self.frame += 1;
         }
-        self.maybe_report(now);
+        self.maybe_report();
     }
 
     #[cfg(not(feature = "logging"))]
-    fn maybe_report(&mut self, _: Instant) {}
+    fn maybe_report(&mut self) {}
 
     #[cfg(feature = "logging")]
-    fn maybe_report(&mut self, now: Instant) {
-        if now - self.last_report_time > Duration::from_secs(5) {
-            self.report(now);
-            self.last_report_time = now;
+    fn maybe_report(&mut self) {
+        if self.now - self.last_report_time > Duration::from_secs(5) {
+            self.report(self.now);
+            self.last_report_time = self.now;
             self.last_report_frame = self.frame;
             self.accum_draw_time = Duration::new(0, 0);
             self.accum_idle_time = Duration::new(0, 0);
