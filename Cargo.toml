@@ -15,9 +15,9 @@ opt-level = 3
 [dependencies]
 cgmath = "*"
 #gleam = "*"
-glium = "0.29"
-glutin = "0.26"
-winit = { version = "0.24", features = ["web-sys"] }
+glium = "0.30"
+glutin = "0.27"
+winit = { version = "0.25", features = ["web-sys"] }
 image = { version = "*", features = ["png_codec"], optional = true }
 instant = { version = "0.1", features = ["wasm-bindgen"] }
 libxm = "1.0.0"
